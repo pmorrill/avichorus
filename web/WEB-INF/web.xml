@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+	 version="3.1">
+    <context-param>
+        <param-name>dbString</param-name>
+        <param-value>jdbc:sqlserver://127.0.0.1:1433;databaseName=avichorus;user=your-username;password=your-password</param-value>
+        <description>Local database connection string</description>
+    </context-param>
+    <context-param>
+        <param-name>soxCmd</param-name>
+        <param-value>"c:\Program Files (x86)\sox-14-4-2\sox"</param-value>
+        <description>Path to sox binaries</description>
+    </context-param>
+    <context-param>
+        <param-name>soxiCmd</param-name>
+        <param-value>"c:\Program Files (x86)\sox-14-4-2\soxi"</param-value>
+        <description>Path to soxi binaries</description>
+    </context-param>
+    <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+</web-app>

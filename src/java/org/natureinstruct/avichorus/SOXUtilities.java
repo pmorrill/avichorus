@@ -1,0 +1,187 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.natureinstruct.avichorus;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+
+/**
+ * This set of utilities will illustrate basic file manipulations that
+ * we have used in Avichorus.
+ * 
+ * Get compiled Sox for windows here: https://sourceforge.net/projects/sox/files/sox/
+ * 
+ * Get compiled libmad.dll here: http://www.opendll.com/index.php?file-download=libmad.dll&arch=32bit&version=&dsc=#
+ * 
+ * @author pmorrill
+ */
+public class SOXUtilities {
+        private static final int                                DEFAULT_SP_LENGTH = 60;
+        private static final String                             DEFAULT_SP_RES = "80";
+        private static final String                             DEFAULT_SP_FREQ = "28";
+        private static final String                             DEFAULT_SP_HEIGHT = "300";
+        private static final String                             DEFAULT_SP_RANGE = "85";
+        
+        private final AVCContext                                      ctx;
+
+        /**
+         * Consrtuct with pointer to the context object
+         * 
+         * @param ctx 
+         */
+        public SOXUtilities(AVCContext ctx) {
+                this.ctx = ctx;
+        }
+        
+        /**
+         * Soxi is a version of the sox program that claculates specific parameters of a recording file
+         * See notes in windows sox deployment guide (link above)
+         * 
+         * @param filep
+         * @param param
+         * @param output
+         * @return 
+         */
+        protected int soxi(String filep,String param,ArrayList<String> output) {
+                String cmd = ctx.getSoxiCmd() + " " + param + " " + filep;
+                int r = runCmd(cmd,output);
+                if ( r == 1 ) System.out.println("Return 1 - Error in commandline parameters...");
+                if ( r == 2 ) System.out.println("Return 2 - Error in processing command...");
+                if ( r == 3 ) System.out.println("Return 3 - Exception in command processing code...");
+                return r;
+        }
+        
+        /**
+         * Convert a wav file to a mp3 file, and store in the temporary spectrogram path for this recording
+         * 
+         * @param rec Recording object
+         * @return 
+         */
+        protected boolean convertToTempMPEG3(AVCRecording rec) {
+                if ( rec.getId() == null || rec.getId() == 0 ) return false;
+                if ( !rec.getType().contains("wav") ) return false;
+                
+                String newPath = rec.getSpectrogramPath(ctx) + File.separator + rec.getName().replace("wav","mp3");
+                String cmd = ctx.getSoxCmd() + " " + rec.getPath() + " " + newPath;
+                ArrayList<String> output = new ArrayList();
+                int res = runCmd(cmd,output);
+                if ( res > 0 ) {
+                        System.out.println("Error converting file to mp3: "+Arrays.toString(output.toArray()));
+                        return false;
+                }
+                return true;
+        }
+        
+        /**
+         * Create spectrograms of all types (mono, left channel and right channel), and store into temp folder
+         * for this recording. Spectrograms are created in 60 second intervals.
+         * 
+         * Refer to Sox man page for full details of parameters we use:
+         * http://sox.sourceforge.net/sox.html
+         * 
+         * @param rec Recording object
+         * @return 
+         */
+        protected boolean createSpectrogramsToTemp(AVCRecording rec) {
+                if ( rec.getId() == null || rec.getId() == 0 ) return false;
+                double lenTotal;
+                
+                ArrayList<String> output = new ArrayList();
+                /* get file length using soxi - we will partition spectrograms into 60 second segments below */
+                int res = soxi(rec.getPath(),"-D",output);
+                if ( res == 0 ) {
+                        String outPath;
+                        try {
+                                lenTotal = Double.parseDouble(output.get(0));
+                                if ( lenTotal == 0 ) return false;
+                                int segs = 1;
+                                double done = 0, todo = 0;
+                                int start = 0, process = DEFAULT_SP_LENGTH;
+                                
+                                /* start with a mono version of the png files */
+                                String ch = "M", remix = "remix -";
+                                do {
+                                        /* output file segment name */
+                                        outPath = rec.getSpectrogramPath(ctx) + File.separator + ch + segs + ".png";
+                                        
+                                        if ( process + start > (int)lenTotal ) process = (int)lenTotal - start;
+                                        
+                                        String cmd = ctx.getSoxCmd() + " " + rec.getPath() + " -n -V" +
+                                                " rate " + DEFAULT_SP_FREQ + "k " + remix +
+                                                " trim " + start + " " + process +
+                                                " spectrogram -l -m -X " + DEFAULT_SP_RES +
+                                                " -z " + DEFAULT_SP_RANGE +
+                                                " -r -Y " + DEFAULT_SP_HEIGHT + " -o " + outPath;// + " 2>&1";
+
+                                        output.clear();
+                                        res = runCmd(cmd,output);
+                                        if ( res > 0 ) {
+                                                /* an error condition */
+                                                System.out.println(output);
+                                                break;
+                                        }
+                                        
+                                        segs++;
+                                        start += process;
+                                        if ( start < lenTotal - 1 ) continue;
+                                        switch ( ch ) {
+                                                case "M":
+                                                        /* now loop and do a left channel version */
+                                                        ch = "L"; remix = "remix 1";
+                                                        start = 0; process = DEFAULT_SP_LENGTH;
+                                                        segs = 1;
+                                                        break;
+                                                case "L":
+                                                        /* now loop and do a right channel version */
+                                                        ch = "R"; remix = "remix 2";
+                                                        start = 0; process = DEFAULT_SP_LENGTH;
+                                                        segs = 1;
+                                                        break;
+                                                case "R":
+                                                        /* done - break out */
+                                                        segs = -1;
+                                        }
+                                } while ( segs >= 0 );
+                        } catch (Exception e) { return false; }
+                        
+                                
+                }
+                return true;
+                
+        }
+        
+        /**
+         * http://stackoverflow.com/questions/14542448/capture-the-output-of-an-external-program-in-java
+         * SoX return values are 0 - success; 1 - cmdline parameter problem; 2 - error in processing
+         * 
+         * @param cmd
+         * @param output
+         * @return 
+         */
+        protected int runCmd(String cmd,ArrayList<String> output) {
+                Runtime r = Runtime.getRuntime();
+                Process p;
+                BufferedReader is;
+                String line;
+                
+                try {
+                        p = r.exec(cmd);
+                        is = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                        p.waitFor();
+                        while ((line = is.readLine()) != null) {
+                                output.add(line);
+                        }
+                        return p.exitValue();
+                } catch (IOException | InterruptedException e) {
+                        System.out.println(e.getMessage());
+                }
+                return 3;
+        }
+}
