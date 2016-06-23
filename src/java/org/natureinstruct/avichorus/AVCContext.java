@@ -51,6 +51,7 @@ public class AVCContext {
         public boolean connect() {
                 try {
                         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                        Class.forName("com.mysql.jdbc.Driver");
                         db = DriverManager.getConnection(dbString);
                 } catch (ClassNotFoundException e) {
                         System.out.println(e.getMessage());

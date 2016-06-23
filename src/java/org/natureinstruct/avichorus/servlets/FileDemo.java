@@ -12,6 +12,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.json.simple.JSONObject;
 import org.natureinstruct.avichorus.AVCContext;
 import org.natureinstruct.avichorus.AVCRecording;
 import org.natureinstruct.avichorus.SOXUtilities;
@@ -54,11 +55,27 @@ public class FileDemo extends HttpServlet {
                                         
                         switch ( action ) {
                                 
+                                case "/map-data":
+                                        AVCRecording[] recordingList = AVCRecording.listFiles(ctx);
+                                        JSONObject map = new JSONObject();
+                                        map = AVCRecording.getMap(ctx,"ABMI-TEST");
+                                        request.setAttribute("recordingList",recordingList);
+                                        response.setContentType("application/json;charset=UTF-8");
+                                        map.writeJSONString(out);
+                                        return;
+                                        
                                 case "/list":
                                         AVCRecording[] recordings = AVCRecording.listFiles(ctx);
                                         request.setAttribute("recordingList",recordings);
+                                        request.setAttribute("pageTitle","Recording List");
                                         request.getServletContext().getRequestDispatcher("/WEB-INF/listRecordings.jsp").forward(request,response);
                                         return;
+
+                                case "/play":
+                                        msg = "Viewing / analysing spectrogram not available";
+                                        
+                                        /* view the recording */
+                                        break;
 
                                 case "/spectrograms":
                                         /* create a specttrograms into tmp directory */
@@ -79,13 +96,7 @@ public class FileDemo extends HttpServlet {
                                         response.sendRedirect(request.getServletContext().getContextPath()+"/demo/list");
                                         break;
                                         
-                                case "/play":
-                                        msg = "Viewing / analysing spectrogram not available";
-                                        
-                                        /* view the recording */
-                                        break;
                         }
-                
                 
                         response.setContentType("text/html;charset=UTF-8");
                         /* TODO output your page here. You may use following sample code. */

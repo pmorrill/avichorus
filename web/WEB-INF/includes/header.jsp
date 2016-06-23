@@ -5,13 +5,17 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Motus ${pageTitle}</title>
-    <script type='text/javascript' src='http://motus-wts.org/wp-includes/js/jquery/jquery-migrate.min.js?ver=1.2.1'></script>
-    <script type='text/javascript' src='http://motus-wts.org/wp-content/plugins/dropdown-menu-widget/scripts/include.js?ver=4.4.1'></script>
+    <title>Avichorus Demo - ${pageTitle}</title>
+    <script type='text/javascript' src='http://www.natureinstruct.org/common/jquery/jquery-1.9.0.js'></script>
+    <link rel="stylesheet" type="text/css" href="<c:url value="/styles/media.css" />" />
+    <script type="text/javascript" src="http://maps.google.com/maps/api/js"></script>
+    <script type="text/javascript" src="<c:url value="/scripts/jwplayer.js" />"></script>
+    <script type='text/javascript' src='<c:url value="/scripts/avcr.js" />'></script>
 
     <style type="text/css">
       body > div { width: 95%; max-width: 1000px; margin: 0px auto; }

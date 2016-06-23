@@ -6,13 +6,12 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<!DOCTYPE html>
 <c:import url="includes/header.jsp" />
-    <h1>AVCR Recordings and Test Functions</h1>
+    <h1>AVCR Recordings List: ABMI Demo Project</h1>
     <p>Running Sox commands to create spectrograms or convert a wav file to mp3 is time-consuming: you will have to implement these in
       commandline jobs rather than as done here. But, the links below and accompanying code demonstrate the commands needed to perform these tasks.<p/>
     <p>Make sure that you refer to the SoX documentation to see what changes you might want to make to the parameters when creating
-      spectgrams.</p>
+      spectrograms.</p>
     <table>
       <tr>
         <th>ID</th>
@@ -53,6 +52,18 @@
     </table>
     <p>The so-called 'Temp Path' for a recording is created by the software to store spectrograms and converted (mp3) files if necessary. The path is
       constructed based on the system temp drive: this directory logic will have to be replaced on your production system.</p>
+
+<h2>You may select a recording from the map:</h2>
+<div id="recordingMap">
+  
 </div>
+</div>
+  <script type="text/javascript">
+$(function() {
+  $.get("<c:url value="/demo/map-data" />",function(json) {
+      map(json);
+    })
+});
+    </script>
   </body>
 </html>

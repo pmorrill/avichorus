@@ -13,6 +13,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 /**
  * A Simple Bean to manage a avichorus recording file and accompanying spectrograms
@@ -20,6 +22,7 @@ import java.util.HashMap;
  * @author pmorrill
  */
 public class AVCRecording implements Serializable {
+        private final static String             SUBPATH_FMT = "%04d";
         protected long                          id;
         protected String                        name;
         protected String                        path;
@@ -89,7 +92,7 @@ public class AVCRecording implements Serializable {
          */
         protected String getSpectrogramPath(AVCContext ctx) {
                 String subPath = ctx.getTmpPath()+File.separator+"spectrograms" + 
-                        File.separator+String.format("%04d",id);
+                        File.separator+String.format(AVCRecording.SUBPATH_FMT,id);
                 return subPath;
         }
         
@@ -181,6 +184,47 @@ public class AVCRecording implements Serializable {
                 }
                 AVCRecording[] recs = new AVCRecording[1];
                 return aList.toArray(recs);
+        }
+        
+        static public JSONObject getMap(AVCContext ctx,String project) {
+                JSONObject j = new JSONObject();
+                boolean headers = false;
+                String sql = "SELECT * FROM recordings a INNER JOIN projects b ON fkProjectID = nProjectID WHERE b.chAbbrev = ?";
+                j.put("project",project);
+                j.put("zoom",4);
+                j.put("centerx",-102);
+                j.put("centery",50.9);
+                j.put("cluster",false);
+                double xc = 0, yc = 0;
+                try (PreparedStatement st = ctx.getConnection().prepareStatement(sql) ) {
+                        st.setString(1,project);
+                        Long pid = new Long(0);
+                        ResultSet rs = st.executeQuery();
+                        JSONArray j3 = new JSONArray();
+                        int i = 0;
+                        while ( rs.next() ) {
+                                i++;
+                                pid = rs.getLong("nProjectID");
+                                JSONObject j2 = new JSONObject();
+                                xc += rs.getDouble("fltLongitude");
+                                j2.put("longitude",rs.getDouble("fltLongitude"));
+                                yc += rs.getDouble("fltLatitude");
+                                j2.put("latitude",rs.getDouble("fltLatitude"));
+                                String dtt = rs.getDate("dtDate").toString();
+                                j2.put("recording",dtt);
+                                j2.put("province",rs.getString("chProvince"));
+                                j2.put("habitat",rs.getString("chHabitat"));
+                                j2.put("siteName",rs.getString("chSiteName"));
+                                j2.put("timeClass",rs.getString("chTimeClass"));
+                                j2.put("recordingId",rs.getLong("nRecordingID"));
+                                j3.add(j2);
+                        }
+                        j.put("markers",j3);
+                        j.put("project_id",pid);
+                        j.put("centerx",xc / i);
+                        j.put("centery",yc / i);
+                } catch (Exception e) { }
+                return j;
         }
         
 }

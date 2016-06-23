@@ -1,0 +1,45 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 14-Jun-2016, 2:32:29 PM
+    Author     : pmorrill
+*/
+
+#spectrogram-wrap {
+  position: relative;
+}
+  
+#spectrogram-display {
+  width: 100%;
+  height: 298px;
+  overflow: scroll;
+  position: relative;
+  border: 1px solid #565656;
+}
+#spectrogram-index-marker {
+  border-bottom: 1px solid #880000;
+  border-left: 1px solid #880000;
+  border-right: 1px solid #880000;
+  position: absolute;
+  width: 3px;
+  z-index: 2;
+}
+#spectrogram-images {
+  width: 7000px;
+  height: 280px;
+  left: 350px;
+  position: absolute;
+}
+#spectrogram-display img {
+  float: left;
+}
+
+#recordingMap {
+  width: 85%;
+  margin: 10px auto;
+  height: 500px;
+  border: 1px solid #6767ff;
+}
