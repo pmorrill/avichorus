@@ -72,10 +72,17 @@ public class FileDemo extends HttpServlet {
                                         return;
 
                                 case "/play":
-                                        msg = "Viewing / analysing spectrogram not available";
-                                        
-                                        /* view the recording */
-                                        break;
+                                        Long rid;
+                                        try {
+                                                rid = Long.parseLong(request.getParameter("id"));
+                                        } catch (Exception e) { msg = "Error opening recording id"; break; }
+                                        AVCRecording recording = new AVCRecording(ctx,rid);
+                                        request.setAttribute("recordingBean",recording);
+                                        request.setAttribute("displayWidth",1000);
+                                        request.setAttribute("recordingImages",recording.getMonoImages());
+                                        request.setAttribute("pageTitle","Play a Recording");
+                                        request.getServletContext().getRequestDispatcher("/WEB-INF/audio.jsp").forward(request,response);
+                                        return;
 
                                 case "/spectrograms":
                                         /* create a specttrograms into tmp directory */
@@ -94,8 +101,7 @@ public class FileDemo extends HttpServlet {
                                                 rec.convertToMPEG3(ctx);
                                         }
                                         response.sendRedirect(request.getServletContext().getContextPath()+"/demo/list");
-                                        break;
-                                        
+                                        return;
                         }
                 
                         response.setContentType("text/html;charset=UTF-8");
