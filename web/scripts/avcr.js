@@ -13,6 +13,12 @@ var stopIcon = {
 };
 var iWindow = null;
 var g_map = null;
+var g_speed = 0;
+var g_x = 0;
+var g_mState = 0;
+var g_no_seek = false;
+var g_endAt = 0;
+var g_pc_length = 0;
 
 /**
  * Use Google maps to display a map of the recordings in the project
@@ -77,14 +83,64 @@ function init_player6(silent,play_url,d_id,bAutoStart,cb_scroll,cb_onseek,cb_onp
 	gPlayerVersion = 6;
 }
 
-var g_media = null;
-var g_player = 'pl_twrap';
-var g_media = null; // file to play
+function avcr_jwp_pause() {
+	$('#spectrogram-display').removeClass('noscroll'); jwplayer(g_player).pause(true);
+	g_endAt = 0;
+}
+function avcr_jwp_play() {
+	$('#spectrogram-display').addClass('noscroll'); jwplayer(g_player).play(true);
+}
 
+function avcr_restart() {
+  jwplayer().seek(0);
+  $('#spectrogram-display').addClass('noscroll');
+}
+
+function avcr_scroll(e) {
+	if ( jwplayer(g_player).getState() == 'PLAYING' ) return;
+	var t = e.currentTarget;
+	var ss = t.scrollLeft / (t.scrollWidth - t.clientWidth) * g_pc_length;
+	$('#media_position').html(ss.toFixed(1)+' of '+g_pc_length.toFixed(1)+' s');
+	g_no_seek = 1;
+	jwplayer(g_player).seek(ss); jwplayer(g_player).pause(true);
+	setTimeout(function() { g_no_seek = 0; },500);
+}
+
+/* call back functions */
+function avcr_jwp_cb_spectro_scroll(p) {
+	var r = Math.round(p.position * g_speed);
+	if ( r != g_x ) {
+		g_x = r;
+		if ( !g_no_seek ) $('#spectrogram-display').scrollLeft(r);
+//		if ( g_endAt && p.position>g_endAt ) avcr_jwp_pause();
+	}
+	$('#media_position').html(p.position.toFixed(1)+' of '+g_pc_length.toFixed(1)+' s');
+}
+function avcr_jwp_cb_spectro_play(p) { $('#new_sel').remove(); g_mState = 0; }
+
+function avcr_jwp_cb_spectro_seek(p) { }
+
+
+/**
+ * Toggle the play action: start or pause
+ * 
+ * @param {type} st true to start player
+ * @returns {undefined}
+ */
+function avcr_play(st) {
+	//var state = st ? 'PLAYING' : 'PAUSED';
+    state = jwplayer(g_player).getState();
+	if ( state == 'PLAYING' ) avcr_jwp_pause();
+    else avcr_jwp_play();
+}
+
+var g_player = 'pl_twrap'; // div to use for player
+var g_media = null; // file to play
 
 $(function() {
 	$('#spectrogram-wrap').css('cursor', 'wait'); 
-	if ( g_media != null ) init_player6(false,g_media,g_player,true,null,null,null);
-//	if ( g_media != null ) init_player6(0,g_media,g_player,0,avcr_jwp_cb_spectro_scroll,avcr_jwp_cb_spectro_seek,avcr_jwp_cb_spectro_play);
+	if ( g_media != null ) init_player6(true,g_media,g_player,true,null,null,avcr_jwp_cb_spectro_play);
+    $('#media_position').html("0.0 of "+g_pc_length.toFixed(1)+'s');
+    $('#spectrogram-display').scroll(avcr_scroll);
     $('#spectrogram-wrap').css('cursor', 'default'); 
 });
