@@ -139,7 +139,7 @@ var g_media = null; // file to play
 
 $(function() {
 	$('#spectrogram-wrap').css('cursor', 'wait'); 
-	if ( g_media != null ) init_player6(true,g_media,g_player,true,null,null,avcr_jwp_cb_spectro_play);
+	if ( g_media != null ) init_player6(true,g_media,g_player,true,avcr_jwp_cb_spectro_scroll,null,null);
     $('#media_position').html("0.0 of "+g_pc_length.toFixed(1)+'s');
     $('#spectrogram-display').scroll(avcr_scroll);
     $('#spectrogram-wrap').css('cursor', 'default'); 
