@@ -116,7 +116,7 @@ public class SOXUtilities {
                                 if ( lenTotal == 0 ) return false;
                                 int segs = 1;
                                 double done = 0, todo = 0;
-                                int start = 0, process = DEFAULT_SP_LENGTH;
+                                double start = 0, process = DEFAULT_SP_LENGTH;
                                 
                                 /* start with a mono version of the png files */
                                 String ch = "M", remix = "remix -";
