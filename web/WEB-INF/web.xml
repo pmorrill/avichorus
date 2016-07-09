@@ -20,8 +20,7 @@
         <description>Path to soxi binaries</description>
     </context-param>
     <session-config>
-        <session-timeout>
-            30
-        </session-timeout>
+      <tracking-mode>COOKIE</tracking-mode>
+      <session-timeout>30</session-timeout>
     </session-config>
 </web-app>
