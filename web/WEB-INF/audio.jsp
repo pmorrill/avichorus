@@ -19,14 +19,14 @@
     <p style="font-weight: bold">Url: ${recordingBean.recordingUrl}</p>
     <div id="spectrogram-wrap" style="width: ${displayWidth}px;">
       <div id="spectrogram-index-marker" style="left: 350px; height: ${recordingBean.spectrogramHeight}px;"></div>
-      <img alt="Y-Axis" src="/avichorus/spectrograms/tmp/yaxis-c1r14h257.png" style="position: absolute; top: 1px; left: 1px; z-index: 10">
+      <img alt="Y-Axis" src="<c:url value="/spectrograms/tmp/yaxis-c1r14h257.png" />" style="position: absolute; top: 1px; left: 1px; z-index: 10">
       <div id="spectrogram-display" style="height: ${recordingBean.spectrogramHeight+40}px;">
         <div style="width: 100px; height: 50px; text-align: left; z-index: 0; position: absolute; left: 400px"><div id="pl_twrap"></div></div>
         <div id="spectrogram-images" style="left: ${recordingBean.leftOffset}px; width: ${recordingBean.spectrogramWidth+displayWidth-350}px">
     <c:forEach var="i" begin="0" end="${fn:length(recordingImages)-1}">
       <img src="${recordingImages[i]}" />
     </c:forEach>
-      <img alt="X-Axis (${recordingBean.horizontalLegend})" src="/avichorus/spectrograms/tmp/${recordingBean.horizontalLegend}">
+      <img alt="X-Axis (${recordingBean.horizontalLegend})" src="<c:url value="/spectrograms/tmp/${recordingBean.horizontalLegend}" />">
         </div>
       </div>
     </div>
