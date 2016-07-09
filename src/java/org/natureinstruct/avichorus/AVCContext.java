@@ -25,7 +25,9 @@ public class AVCContext {
         private String                                soxiCmd;
         private Connection                            db;
         private String                                fileBasePath;
-        private Long                                  userId;
+        private String                                  spectroBasePath;
+        private String                                  spectroBaseUrl;
+        private Long                                    userId;
                 
         /**
          * Constructor pulls parameters from web.xml
@@ -39,6 +41,9 @@ public class AVCContext {
                 soxCmd = servletCtx.getInitParameter("soxCmd");
                 soxiCmd = servletCtx.getInitParameter("soxiCmd");
                 fileBasePath = servletCtx.getRealPath("/WEB-INF/test-recordings");
+                fileBasePath = servletCtx.getRealPath("/recordings");
+                spectroBasePath = servletCtx.getRealPath("/spectrograms");
+                spectroBaseUrl = servletCtx.getContextPath()+"/spectrograms";
                 userId = 1L; /* demo user is pmorrill : see users table in avichorus.sql */
         }
         
@@ -66,6 +71,8 @@ public class AVCContext {
         protected String getSoxCmd() { return soxCmd; }
         protected String getSoxiCmd() { return soxiCmd; }
         protected String getFileBasePath() { return fileBasePath; }
+        protected String getSpectroBasePath() { return spectroBasePath; }
+        protected String getSpectroBaseUrl() { return spectroBaseUrl; }
         protected String getTmpPath() { return System.getProperty("java.io.tmpdir"); }
         protected Connection getConnection() { return db; }
         protected Long getUserId() { return userId; }
