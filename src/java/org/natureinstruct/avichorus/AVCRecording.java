@@ -5,6 +5,7 @@
  */
 package org.natureinstruct.avichorus;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.Serializable;
 import java.sql.PreparedStatement;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import javax.imageio.ImageIO;
 
 /**
  * A Simple Bean to manage a avichorus recording file and accompanying spectrograms
@@ -31,10 +33,25 @@ public class AVCRecording implements Serializable {
         protected ArrayList<String>             leftSpectrograms;
         protected ArrayList<String>             rightSpectrograms;
         protected ArrayList<String>             monoSpectrograms;
+        protected ArrayList<String>             monoSpectrogramUrls;
+        protected ArrayList<String>             leftSpectrogramUrls;
+        protected ArrayList<String>             rightSpectrogramUrls;
+        protected AVCContext                    ctx;
         protected HashMap<String,Object>        hm;
-        protected String                        spectrogramPath;
+        
+        /* path to the temp folder to place generated spectrograms (demo only) */
+        protected String                        spectrogramTempPath;
+        /* base path to the live spectrograms available for web use */
+        protected String                        spectrogramBasePath;
+        /* base url for the live spectrograms */
+        protected String                        spectrogramBaseUrl;
+        
         protected String                        projName;
+        protected String                        recordingUrl;
 
+        protected int                           spectrogramWidth;
+        protected int                           spectrogramHeight;
+        
         public Long getId() { return id; }
         public String getPath() { return path; }
         public String getName() { return name; }
@@ -45,7 +62,51 @@ public class AVCRecording implements Serializable {
         public String getLeft() { return leftSpectrograms == null ? "" : leftSpectrograms.toString(); }
         public String getRight() { return rightSpectrograms == null ? "" : rightSpectrograms.toString(); }
         public String getMono() { return monoSpectrograms == null ? "" : monoSpectrograms.toString(); }
-        public String getTempPath() { return spectrogramPath; }
+        
+        public String[] getMonoImages() {
+                String[] images = new String[monoSpectrogramUrls.size()];
+                return monoSpectrogramUrls.toArray(images);
+        }
+        public String[] getLeftImages() {
+                String[] images = new String[leftSpectrogramUrls.size()];
+                return leftSpectrogramUrls.toArray(images);
+        }
+        public String[] getRightImages() {
+                String[] images = new String[rightSpectrogramUrls.size()];
+                return rightSpectrogramUrls.toArray(images);
+        }
+        public int getSpectrogramWidth() { return spectrogramWidth; }
+        public int getSpectrogramHeight() { return spectrogramHeight; }
+        
+        public String getTempPath() { return spectrogramTempPath; }
+        public String getSpectrogramPath() { return spectrogramBasePath; }
+        public String getSpectrogramUrl() { return spectrogramBaseUrl; }
+        public String getRecordingUrl() { return recordingUrl; }
+        public Double getLength() {
+                SOXUtilities sx = new SOXUtilities(ctx);
+                return sx.getRecordingLength(path);
+        }
+        public int getLeftOffset() { return 350; }
+        
+        /**
+         * The display speed is 80 px per second on all of our default spectrograms
+         * 
+         * @return 
+         */
+        public Double getDisplaySpeed() { return SOXUtilities.DEFAULT_SP_RES; }
+        
+        /**
+         * The horizontal axis length is no more than 2 s longer than the recording itself
+         * 
+         * @return 
+         */
+        public String getHorizontalLegend() {
+                Double x = getLength();
+                if ( x == null ) return "";
+                int c = (int)Math.floor(x / 2) * 2 + 2;
+                String a = "xaxis-r80L" + c + "s.png";
+                return a;
+        }
         
         /**
          * Open record from database is all
@@ -54,31 +115,68 @@ public class AVCRecording implements Serializable {
          * @param id 
          */
         public AVCRecording(AVCContext ctx, Long id) {
+                this.ctx = ctx;
                 String sql = "SELECT recordings.*,projects.chName as projName,files.chMimeType FROM recordings "
                         + "INNER JOIN projects ON fkProjectID=nProjectID "
                         + "INNER JOIN files ON fkFileID=nFileID WHERE nRecordingID = ?";
                 try (PreparedStatement st = ctx.getConnection().prepareStatement(sql)) {
-                       st.setLong(1,id);
-                       ResultSetMetaData md;
-                       ResultSet rs = st.executeQuery();
-                       if ( rs.next() ) {
+                        st.setLong(1, id);
+                       	ResultSetMetaData md;
+                       	ResultSet rs = st.executeQuery();
+                        if (rs.next()) {
                                 hm = new HashMap<>();
                                 md = rs.getMetaData();
-                                for ( int i = 1; i < md.getColumnCount() + 1; i++ ) {
-                                        hm.put(md.getColumnLabel(i),rs.getObject(i));
+                                for (int i = 1; i < md.getColumnCount() + 1; i++) {
+                                        hm.put(md.getColumnLabel(i), rs.getObject(i));
                                 }
-                       }
-                       Integer idi = (Integer)hm.get("nRecordingID");
-                       this.id = idi.longValue();
-                       name = (String)hm.get("chName");
-                       type = (String)hm.get("chMimeType");
-                       projName = (String)hm.get("projName");
-                       if ( type.contains("wav") ) getTempMPEG3(ctx);
-                       this.path = ctx.getFileBasePath() + File.separator + name;
-                       getSpectrograms(ctx);
-                        spectrogramPath = getSpectrogramPath(ctx);
+                       	}
+                        Integer idi = (Integer) hm.get("nRecordingID");
+                       	this.id = idi.longValue();
+                        name = (String) hm.get("chName");
+                        type = (String) hm.get("chMimeType");
+                        projName = (String) hm.get("projName");
+                        String subP = String.format(AVCRecording.SUBPATH_FMT, this.id);
+                       	this.path = ctx.getFileBasePath() + File.separator + name;
+                        if (type.contains("wav")) {
+                                getTempMPEG3(ctx);
+                                recordingUrl = "/recordings/" + name.replace("wav","mp3");
+                        } else recordingUrl = "/recordings/" + name;
+                       	getSpectrograms(ctx);
+                        spectrogramTempPath = getSpectrogramPath(ctx);
+                        spectrogramBasePath = ctx.getSpectroBasePath() + File.separator + subP;
+                        spectrogramBaseUrl = ctx.getSpectroBaseUrl() + "/" + subP;
+                        buildSpectrogramUrls();
                 } catch (Exception e) {
                         System.out.println("SQLException on extractRecord: "+e.getMessage());
+                }
+        }
+        
+        /**
+         * Build a list of urls to all the spectrograms
+         * 
+         */
+        protected void buildSpectrogramUrls() {
+                File fp = new File(spectrogramBasePath);
+                monoSpectrogramUrls = new ArrayList<>();
+                leftSpectrogramUrls = new ArrayList<>();
+                rightSpectrogramUrls = new ArrayList<>();
+                if ( fp.isDirectory() ) {
+                        String[] fs = fp.list();
+                        for ( String s : fs ) {
+                                System.out.println(s);
+                                File sf = new File(s);
+                                if (sf.getName().startsWith("M")) {
+                                        monoSpectrogramUrls.add(spectrogramBaseUrl + "/" + sf.getName());
+                                        try {
+                                                BufferedImage readImage = null;
+                                                readImage = ImageIO.read(new File(spectrogramBasePath + File.separator + s));
+                                                spectrogramHeight = readImage.getHeight();
+                                                spectrogramWidth += readImage.getWidth();
+                                        } catch (Exception e) { spectrogramWidth = 0; spectrogramHeight = 0; }
+                                }
+                                else if ( sf.getName().startsWith("L") ) leftSpectrogramUrls.add(spectrogramBaseUrl+"/"+sf.getName());
+                                else if ( sf.getName().startsWith("R") ) rightSpectrogramUrls.add(spectrogramBaseUrl+"/"+sf.getName());
+                        }
                }
                  
         }
