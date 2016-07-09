@@ -24,13 +24,14 @@ import java.util.Arrays;
  */
 public class SOXUtilities {
         private static final int                                DEFAULT_SP_LENGTH = 60;
-        private static final String                             DEFAULT_SP_RES = "80";
         private static final String                             DEFAULT_SP_FREQ = "28";
         private static final String                             DEFAULT_SP_HEIGHT = "300";
         private static final String                             DEFAULT_SP_RANGE = "85";
         
         private final AVCContext                                      ctx;
 
+        public static final double                              DEFAULT_SP_RES = 80;
+        
         /**
          * Consrtuct with pointer to the context object
          * 
@@ -41,7 +42,21 @@ public class SOXUtilities {
         }
         
         /**
-         * Soxi is a version of the sox program that claculates specific parameters of a recording file
+         * Use soxi to determine the length of the recording, and returns as double
+         * 
+         * @param fp File path
+         * @return 
+         */
+        protected Double getRecordingLength(String fpath) {
+                ArrayList<String> output = new ArrayList();
+                if ( 0 == soxi(fpath,"-D",output) ) {
+                        return Double.parseDouble(output.get(0));
+                }
+                return null;
+        }
+        
+        /**
+         * Soxi is a version of the sox program that calculates specific parameters of a recording file
          * See notes in windows sox deployment guide (link above)
          * 
          * @param filep
@@ -91,15 +106,13 @@ public class SOXUtilities {
          */
         protected boolean createSpectrogramsToTemp(AVCRecording rec) {
                 if ( rec.getId() == null || rec.getId() == 0 ) return false;
-                double lenTotal;
                 
                 ArrayList<String> output = new ArrayList();
                 /* get file length using soxi - we will partition spectrograms into 60 second segments below */
-                int res = soxi(rec.getPath(),"-D",output);
-                if ( res == 0 ) {
+                Double lenTotal = getRecordingLength(rec.getPath());
+                if ( lenTotal != null  ) {
                         String outPath;
                         try {
-                                lenTotal = Double.parseDouble(output.get(0));
                                 if ( lenTotal == 0 ) return false;
                                 int segs = 1;
                                 double done = 0, todo = 0;
@@ -111,7 +124,7 @@ public class SOXUtilities {
                                         /* output file segment name */
                                         outPath = rec.getSpectrogramPath(ctx) + File.separator + ch + segs + ".png";
                                         
-                                        if ( process + start > (int)lenTotal ) process = (int)lenTotal - start;
+                                        if ( process + start > lenTotal ) process = lenTotal - start;
                                         
                                         String cmd = ctx.getSoxCmd() + " " + rec.getPath() + " -n -V" +
                                                 " rate " + DEFAULT_SP_FREQ + "k " + remix +
@@ -121,8 +134,7 @@ public class SOXUtilities {
                                                 " -r -Y " + DEFAULT_SP_HEIGHT + " -o " + outPath;// + " 2>&1";
 
                                         output.clear();
-                                        res = runCmd(cmd,output);
-                                        if ( res > 0 ) {
+                                        if ( runCmd(cmd,output) > 0 ) {
                                                 /* an error condition */
                                                 System.out.println(output);
                                                 break;
