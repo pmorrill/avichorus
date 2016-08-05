@@ -11,7 +11,7 @@
   g_media = '<c:url value="${recordingBean.recordingUrl}" />';
   g_speed = ${recordingBean.displaySpeed};
   g_pc_length = ${recordingBean.length};
-  
+  g_pc_id = ${recordingBean.id};
 </script>
 <a href="<c:url value="/demo/list" />">&lt; &lt; Back to Recording List</a>
     <h1>${recordingBean.name}</h1>

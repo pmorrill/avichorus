@@ -7,6 +7,8 @@ package org.natureinstruct.avichorus.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -14,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.json.simple.JSONObject;
 import org.natureinstruct.avichorus.AVCContext;
+import org.natureinstruct.avichorus.AVCTag;
 import org.natureinstruct.avichorus.AVCRecording;
 import org.natureinstruct.avichorus.SOXUtilities;
 
@@ -33,11 +36,11 @@ public class FileDemo extends HttpServlet {
          * @throws ServletException if a servlet-specific error occurs
          * @throws IOException if an I/O error occurs
          */
-        protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-                throws ServletException, IOException {
+	protected void processRequest(HttpServletRequest request,HttpServletResponse response)
+		throws ServletException,IOException {
                 
                 AVCContext ctx = new AVCContext(request,response);
-                try (PrintWriter out = response.getWriter()) {
+		try ( PrintWriter out = response.getWriter() ) {
                         if ( !ctx.connect() ) {
                                 out.println("Error setting up db connection.");
                                 return;
@@ -47,11 +50,16 @@ public class FileDemo extends HttpServlet {
                         String p = request.getServletPath();
                         String action = request.getPathInfo();
                         if ( p.equals("") && action.equals("/") ) {
-                                response.sendRedirect(request.getServletContext().getContextPath()+"/demo/list");
+				response.sendRedirect(request.getServletContext().getContextPath() + "/demo/list");
                                 return;
                         }
                         String msg = "";
                         String id = request.getParameter("id");
+			String tagIdStr;
+			String recordingIdStr;
+			Long tagId = null;
+			AVCRecording recording = null;
+			AVCTag tag = null;
                                         
                         switch ( action ) {
                                 
@@ -76,7 +84,7 @@ public class FileDemo extends HttpServlet {
                                         try {
                                                 rid = Long.parseLong(request.getParameter("id"));
                                         } catch (Exception e) { msg = "Error opening recording id"; break; }
-                                        AVCRecording recording = new AVCRecording(ctx,rid);
+					recording = new AVCRecording(ctx,rid);
                                         request.setAttribute("recordingBean",recording);
                                         request.setAttribute("displayWidth",1000);
                                         request.setAttribute("recordingImages",recording.getMonoImages());
@@ -88,10 +96,10 @@ public class FileDemo extends HttpServlet {
                                         /* create a specttrograms into tmp directory */
                                         if ( id != null ) {
                                                 AVCRecording rec = new AVCRecording(ctx,Long.parseLong(id));
-                                                System.out.println("Creating spectrogram on ID "+rec.getId());
+						System.out.println("Creating spectrogram on ID " + rec.getId());
                                                 rec.createSpectrograms(ctx);
                                         }
-                                        response.sendRedirect(request.getServletContext().getContextPath()+"/demo/list");
+					response.sendRedirect(request.getServletContext().getContextPath() + "/demo/list");
                                         return;
                                         
                                 case "/convert":
@@ -100,8 +108,46 @@ public class FileDemo extends HttpServlet {
                                                 AVCRecording rec = new AVCRecording(ctx,Long.parseLong(id));
                                                 rec.convertToMPEG3(ctx);
                                         }
-                                        response.sendRedirect(request.getServletContext().getContextPath()+"/demo/list");
+					response.sendRedirect(request.getServletContext().getContextPath() + "/demo/list");
                                         return;
+
+				case "/tag-form":
+					String pc_id = request.getParameter("rid");
+					tagIdStr = request.getParameter("tagid");
+					AVCRecording rec = new AVCRecording(ctx,Long.parseLong(pc_id));
+					try {
+						tagId = Long.parseLong(tagIdStr);
+					} catch (NumberFormatException ex) {
+
+					}
+					request.setAttribute("tagBean",new AVCTag(ctx,rec,tagId));
+					Map<String,String> codes = new LinkedHashMap<>();
+
+					request.setAttribute("speciesList",AVCTag.getSpeciesList(ctx,codes));
+					System.out.println(codes);
+					request.setAttribute("speciesCodes",codes);
+					request.setAttribute("alternateTaxa",AVCTag.getAltTaxaList());
+					request.getServletContext().getRequestDispatcher("/WEB-INF/tagForm.jsp").forward(request,response);
+					return;
+
+				case "/tag":
+					recordingIdStr = request.getParameter("fkRecordingID");
+					tagIdStr = request.getParameter("fkRecordingSpecID");
+					try {
+						recording = new AVCRecording(ctx,Long.parseLong(recordingIdStr));
+						tagId = Long.parseLong(tagIdStr);
+					} catch (NumberFormatException ex) {
+						tagId = null;
+					}
+					if ( recording != null ) {
+						tag = new AVCTag(ctx,recording,tagId);
+						if ( tag != null ) {
+							long tid = tag.saveTagFromPost(request);
+							response.setContentType("application/json");
+							out.println("{\"id\":"+tid+",\"color\":\"recon_1\"}");
+							return;
+						}
+					}
                         }
                 
                         response.setContentType("text/html;charset=UTF-8");
@@ -109,10 +155,10 @@ public class FileDemo extends HttpServlet {
                         out.println("<!DOCTYPE html>");
                         out.println("<html>");
                         out.println("<head>");
-                        out.println("<title>Servlet FileDemo</title>");                        
+			out.println("<title>Servlet FileDemo</title>");
                         out.println("</head>");
                         out.println("<body>");
-                        out.println("<h1>Your request is not available yet</h1><p>"+msg+"</p>");
+			out.println("<h1>Your request is not available yet</h1><p>" + msg + "</p>");
                         out.println("</body>");
                         out.println("</html>");
                 }
