@@ -1,0 +1,88 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 11-Jul-2016, 1:06:38 PM
+    Author     : pmorrill
+*/
+
+#ajax_dlg {
+	position: absolute;
+	left: 100px;
+	top: 100px;
+	border-color: #717868;
+	border-style: solid;
+	border-width: 0px 2px 2px 2px;
+	background-color: #D1DCBE;
+	width: auto;
+	height: auto;
+	overflow: hidden;
+	display: none;
+	z-index: 120;
+}
+#ajax_content { padding: 7px; overflow: auto; }
+#ajax_dlg textarea { width: 100%; height: 40px; }
+
+#ajax_dlg .title {
+	background-color: #909B79;
+	border-color: #717868;
+	border-style: solid;
+	border-width: 2px 0px 2px 0px;
+	height: 15px;
+	padding: 2px 7px 2px 7px;
+	color: #ffffff;
+	font-weight: bold;
+	text-align: left;
+}
+#ajax_dlg .title div { float: left; font-size: 12px; }
+#ajax_dlg .title div { color: #ffffff; }
+.icon_link { width: 16px; height: 16px; display: inline-block; vertical-align: middle; }
+#ajax_dlg .title a.close { float: right; }
+#ajax_dlg .close_btn { float: right; margin: 5px; }
+/*#ajax_content table td { padding: 0px; }*/
+
+a.clear,a.close,a.delete { background-image: url('/images/cross.png'); }
+
+#ajax_mask { position: absolute; display: none; background-color: #000000; z-index: 100; left: 0px; top: 0px; }
+
+img.ajax_clickable { border: 0px; margin: 0px; }
+
+/* the quick menu table - no padding */
+.qmenu td { padding: 0px; }
+.share td { padding: 6px; }
+
+.busy { cursor: "wait"; }
+
+.note-form {
+  padding: 5px;
+}
+
+.sp-select {
+  margin: 4px 12px;
+  text-align: center;
+  height: 30px;
+}
+.sp-code {
+  float: left;
+  height: 30px;
+  width: auto;
+}
+
+.sp-options {
+  float: left;
+  height: 30px;
+  width: auto;
+}
+
+.divide {
+  border: 1px solid #ffffff;
+  margin: 5px;
+  padding: 4px;
+}
+
+#ajax_content textarea {
+  height: 40px;
+  width: 100%;
+}

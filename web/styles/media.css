@@ -7,6 +7,16 @@ and open the template in the editor.
     Created on : 14-Jun-2016, 2:32:29 PM
     Author     : pmorrill
 */
+body {
+  height: auto;
+  width: auto;
+}
+
+#wrapper { width: 100%; max-width: 1000px; margin: 0px auto; }
+table { width: auto; margin: 15px auto 10px 20px; background-color: #454545; }
+th { text-align: left; background-color: #efefde; padding: 5px; text-align: center; }
+td { text-align: left; background-color: #ffffff; padding: 5px; font-size: 0.8em }
+.ctr { text-align: center; }
 
 #spectrogram-wrap {
   position: relative;

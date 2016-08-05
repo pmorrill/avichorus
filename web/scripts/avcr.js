@@ -134,13 +134,90 @@ function avcr_play(st) {
     else avcr_jwp_play();
 }
 
+function avcr_img_cancel_select(e,d) {
+  $('#new_sel').remove(); $('#media_msg').html(''); g_mState = 0;
+  if ( g_was_playing ) jwplayer(g_player).play(true);
+  g_was_playing = 0;
+}
+
+function avcr_img_begin_select(e,d) {
+    // deprecated ??
+	if ( g_no_tagging ) return;
+    
+    // temp check on new_sel length, must be removed?
+	if ( $('#new_sel').length > 0 || e.which != 1 || g_mState != 0 ) { return avcr_img_cancel_select(e,d); }
+	g_mState = 1;
+	if ( jwplayer(g_player).getState() == 'PLAYING' ) { jwplayer(g_player).pause(true); g_was_playing = 1; }
+	var dp = $(d).offset();
+	t = e.pageY-dp.top;
+	l = e.pageX-dp.left;
+	$(d).append('<div class="sel_box new_sel_box" id="new_sel" style="top: '+t+'px; left: '+l+'px; width: 0px; height: 0px"></div>');
+	$('#new_sel').data('start',[t,l]).data('offset',$('#new_sel').offset());
+}
+
+function avcr_img_move_select(e,d) {
+	if ( e.which != 1 || g_mState != 1 ) { return; }
+	var ns = $('#new_sel');
+	if ( !ns.length ) return;
+	var t = ns.data('start')[0]; var l = ns.data('start')[1];
+	var of = ns.data('offset');
+	/* use the original stored starting offset to get height and width */
+	h = e.pageY - of.top;
+	w = e.pageX - of.left;
+	if ( h < 0 ) { t = t + h; h = -h; }
+	if ( w < 0 ) { l = l + w; w = -w; }
+	ns.css({top:t,left:l,height:h,width:w});
+}
+function avcr_img_end_select(e,d) {
+	if ( e.which != 1 || g_mState != 1 ) return;
+	var ns = $('#new_sel');
+	if ( ns.width() < 15 || ns.height() < 15 ) return avcr_img_cancel_select(e,d);
+    g_mState = 0; // temp to stop dragging the box bigger
+
+    /* show form in modal state */
+	$.get('/avcr-abmi/demo/tag-form?rid='+g_pc_id,function(html) {
+		display_ajax_form(html,{modal:0.4,title:'Tag a New Species',onclose:avcr_img_cancel_select,focus:'#active_notes .sp_code'},'avcr_notes'); 
+		/* add data to the form */
+		var nsp = $('#new_sel').position();
+		c = nsp.left+';'+nsp.top;
+		d = ns.width()+';'+ns.height();
+		$('#ajax_dlg form .coords').val(c); $('#ajax_dlg form .box_size').val(d);
+	});
+}
+
+function display_coords(obj) {
+	return;
+
+	if ( !obj || !obj.length ) { $('#media_msg').html(''); return; }
+	dp = obj.offset();
+	x1 = (dp.left - $('#spectrogram-images').offset().left) / g_speed;
+	y1 = (dp.top - $('#spectrogram-images').offset().top) / g_range * 1000;
+	x2 = x1 + obj.width() / g_speed;
+	y2 = y1 + obj.height() / g_range * 1000;
+	$('#media_msg').html(x1.toFixed(1)+','+y1.toFixed(1)+' -> '+x2.toFixed(1)+','+y2.toFixed(1));
+}
 var g_player = 'pl_twrap'; // div to use for player
 var g_media = null; // file to play
+var g_no_tagging = false;
+var g_was_playing = false;
+var dragging = null;
 
 $(function() {
 	$('#spectrogram-wrap').css('cursor', 'wait'); 
 	if ( g_media != null ) init_player6(true,g_media,g_player,true,avcr_jwp_cb_spectro_scroll,null,null);
+	$('#spectrogram-images img').mousemove(function(e) {if ( e.which == 1 ) e.preventDefault();});
+	$('#spectrogram-images img').mousedown(function(e) {if ( e.which == 1 ) e.preventDefault();});
+	$('#spectrogram-images img').mouseup(function(e) {if ( e.which == 1 ) e.preventDefault();});
     $('#media_position').html("0.0 of "+g_pc_length.toFixed(1)+'s');
+    
+    $('#spectrogram-images').mousedown(function(e) { avcr_img_begin_select(e,this); });
+	$('#spectrogram-images').mouseup(function(e) { avcr_img_end_select(e,this); });
+	$('#spectrogram-images').mousemove(function(e) { avcr_img_move_select(e,this); });
+	$('#spectrogram-images').mouseleave(function(e) { avcr_img_end_select(e,this); });
+	$('.sel_box').mouseover(function(e) { display_coords($(e.currentTarget));});
+	$('.sel_box').mouseout(function(e) { display_coords(null);});
+	$('.sel_box').mousedown(function(e) {if ( e.which == 1 && e.ctrlKey ) { e.stopPropagation(); display_tag($(this).attr('id'),0); }});
+    
     $('#spectrogram-display').scroll(avcr_scroll);
     $('#spectrogram-wrap').css('cursor', 'default'); 
 });
