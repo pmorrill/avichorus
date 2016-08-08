@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class AVCTag implements Serializable {
 	
 	public Integer getImageWidth() { return pCount.spectrogramWidth; }
 	public Integer getImageHeight() { return pCount.spectrogramHeight; }
-	public Long getRecordingId() { return pCount.id; }
+	public Long getRecordingId() { return pCount == null ? new Long((Integer)fieldValues.get("fkRecordingID")) : pCount.id; }
 	public Long getFileId() { return pCount.id; }
 	public Long getId() { return id; }
 	public Integer getSpeciesSelected() { return 0; }
@@ -53,6 +54,7 @@ public class AVCTag implements Serializable {
 		try ( PreparedStatement st = ctx.getConnection().prepareStatement("SELECT * FROM tags WHERE nTagID = ?") ) {
 			st.setLong(1,id);
 			try ( ResultSet rs = st.executeQuery() ) {
+				if ( !rs.next() ) return;
 				ResultSetMetaData rsmd = rs.getMetaData();
 				fieldValues = new LinkedHashMap<>();
 				for ( int i = 1; i <= rsmd.getColumnCount(); i++ ) {
@@ -63,7 +65,8 @@ public class AVCTag implements Serializable {
 		} catch (Exception ex) {
 			fieldValues = null;
 		}
-		if ( fieldValues != null ) this.id = (Long)fieldValues.get("nTagID");
+		
+		if ( fieldValues != null ) this.id = new Long((Integer)fieldValues.get("nTagID"));
 	}
 	
 	public Long saveTagFromPost(HttpServletRequest request) {
@@ -78,12 +81,13 @@ public class AVCTag implements Serializable {
 		String alt = request.getParameter("chAltTaxa");
 		try {
 			fieldValues.put("fkRecordingID",Long.parseLong(request.getParameter("fkRecordingID")));
-			fieldValues.put("fkSpecID",Long.parseLong(v));
-			fieldValues.put("chAltTaxa","");
+			long sid = Long.parseLong(v);
+			fieldValues.put("fkSpecID",sid);
+			if ( sid > 0L ) alt = "";
 		} catch (Exception e) {
-			if ( alt != null ) fieldValues.put("chAltTaxa",alt);
 			fieldValues.put("fkSpecID",0);
 		}
+		fieldValues.put("chAltTaxa",alt);
 		
 		/* try to determine the tagging box location and size,
 			in seconds (width) and frequency (height) */
@@ -111,7 +115,7 @@ public class AVCTag implements Serializable {
 
 				/* gte box range in frequency: store start freq (upper left) and range */
 				Double startFreq = Double.parseDouble(imageRange) - (Double.parseDouble(posXY[1]) / freqRate);
-				Double rangeFreq = Double.parseDouble(posXY[1]) / freqRate;
+				Double rangeFreq = Double.parseDouble(deltaXY[1]) / freqRate;
 
 				fieldValues.put("fltStart",startSec);
 				fieldValues.put("fltDuration",widthSec);
@@ -130,16 +134,19 @@ public class AVCTag implements Serializable {
 			fieldValues.put("nBird",new Long(1));
 		}
 		
-		System.out.println(fieldValues);
+//		System.out.println(fieldValues);
 		if ( tagId == null ) insertTag(fieldValues);
 		else updateTag(fieldValues);
 		return this.id;
 	}
 	
 	protected boolean insertTag(Map<String,Object> hm) {
+		Date now = new Date();
+		long tm =  now.getTime()/1000L;
+
 		String sql = "INSERT INTO tags (fkRecordingID,fkSpecID,chAltTaxa,nBird,chConfidence,chComment,"
-			+ "fltStart,fltDuration,fltBoxY,fltHeight,nChannel,bStereoTag) values (?,?,?,?,?,?,?,?,?,?"
-			+ ",0,false)";
+			+ "fltStart,fltDuration,fltBoxY,fltHeight,nChannel,bStereoTag,tsCreated,tsModified) values (?,?,?,?,?,?,?,?,?,?"
+			+ ",0,false," + tm + "," + tm + ")";
 		this.id = 0L;
 		try ( PreparedStatement st = ctx.getConnection().prepareStatement(sql,Statement.RETURN_GENERATED_KEYS) ) {
 			st.setLong(1,(Long)hm.get("fkRecordingID"));
@@ -228,6 +235,17 @@ public class AVCTag implements Serializable {
 			"Northern Cricket Frog",
 			"Wood Frog"};
 		return altTaxa;
+	}
+
+	public void delete() {
+		String sql = "DELETE FROM tags WHERE nTagID = ?";
+		try ( PreparedStatement st = ctx.getConnection().prepareStatement(sql) ) {
+			st.setLong(1,id);
+			st.execute();
+		} catch (Exception ex) {
+			
+		}
+
 	}
 
 }

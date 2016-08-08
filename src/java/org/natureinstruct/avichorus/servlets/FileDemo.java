@@ -86,6 +86,7 @@ public class FileDemo extends HttpServlet {
                                         } catch (Exception e) { msg = "Error opening recording id"; break; }
 					recording = new AVCRecording(ctx,rid);
                                         request.setAttribute("recordingBean",recording);
+					request.setAttribute("recordingTags",recording.listTags());
                                         request.setAttribute("displayWidth",1000);
                                         request.setAttribute("recordingImages",recording.getMonoImages());
                                         request.setAttribute("pageTitle","Play a Recording");
@@ -96,7 +97,6 @@ public class FileDemo extends HttpServlet {
                                         /* create a specttrograms into tmp directory */
                                         if ( id != null ) {
                                                 AVCRecording rec = new AVCRecording(ctx,Long.parseLong(id));
-						System.out.println("Creating spectrogram on ID " + rec.getId());
                                                 rec.createSpectrograms(ctx);
                                         }
 					response.sendRedirect(request.getServletContext().getContextPath() + "/demo/list");
@@ -124,7 +124,6 @@ public class FileDemo extends HttpServlet {
 					Map<String,String> codes = new LinkedHashMap<>();
 
 					request.setAttribute("speciesList",AVCTag.getSpeciesList(ctx,codes));
-					System.out.println(codes);
 					request.setAttribute("speciesCodes",codes);
 					request.setAttribute("alternateTaxa",AVCTag.getAltTaxaList());
 					request.getServletContext().getRequestDispatcher("/WEB-INF/tagForm.jsp").forward(request,response);
@@ -143,11 +142,19 @@ public class FileDemo extends HttpServlet {
 						tag = new AVCTag(ctx,recording,tagId);
 						if ( tag != null ) {
 							long tid = tag.saveTagFromPost(request);
-							response.setContentType("application/json");
-							out.println("{\"id\":"+tid+",\"color\":\"recon_1\"}");
+							response.sendRedirect(request.getServletContext().getContextPath() + "/demo/play?id=" + recording.getId());
 							return;
 						}
 					}
+					return;
+				
+				case "/delete":
+					tagId = Long.parseLong(request.getParameter("id"));
+					tag = new AVCTag(ctx,recording,tagId);
+					rid = tag.getRecordingId();
+					tag.delete();
+					response.sendRedirect(request.getServletContext().getContextPath() + "/demo/play?id=" + rid);
+					return;
                         }
                 
                         response.setContentType("text/html;charset=UTF-8");

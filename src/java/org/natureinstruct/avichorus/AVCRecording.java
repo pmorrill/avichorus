@@ -14,6 +14,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import javax.imageio.ImageIO;
@@ -24,21 +26,22 @@ import javax.imageio.ImageIO;
  * @author pmorrill
  */
 public class AVCRecording implements Serializable {
-        private final static String             SUBPATH_FMT = "%04d";
-        protected long                          id;
-        protected String                        name;
-        protected String                        path;
-        protected String                        type;
-        protected String                        alternateName;
-        protected ArrayList<String>             leftSpectrograms;
-        protected ArrayList<String>             rightSpectrograms;
-        protected ArrayList<String>             monoSpectrograms;
-        protected ArrayList<String>             monoSpectrogramUrls;
-        protected ArrayList<String>             leftSpectrogramUrls;
-        protected ArrayList<String>             rightSpectrogramUrls;
-        protected AVCContext                    ctx;
-        protected HashMap<String,Object>        hm;
         
+	private final static String 		SUBPATH_FMT = "%04d";
+	protected long 				id;
+	protected String name;
+	protected String path;
+	protected String type;
+	protected String alternateName;
+	protected ArrayList<String> leftSpectrograms;
+	protected ArrayList<String> rightSpectrograms;
+	protected ArrayList<String> monoSpectrograms;
+	protected ArrayList<String> monoSpectrogramUrls;
+	protected ArrayList<String> leftSpectrogramUrls;
+	protected ArrayList<String> rightSpectrogramUrls;
+	protected AVCContext ctx;
+	protected HashMap<String,Object> hm;
+
         /* path to the temp folder to place generated spectrograms (demo only) */
         protected String                        spectrogramTempPath;
         /* base path to the live spectrograms available for web use */
@@ -119,15 +122,15 @@ public class AVCRecording implements Serializable {
                 String sql = "SELECT recordings.*,projects.chName as projName,files.chMimeType FROM recordings "
                         + "INNER JOIN projects ON fkProjectID=nProjectID "
                         + "INNER JOIN files ON fkFileID=nFileID WHERE nRecordingID = ?";
-                try (PreparedStatement st = ctx.getConnection().prepareStatement(sql)) {
-                        st.setLong(1, id);
+		try ( PreparedStatement st = ctx.getConnection().prepareStatement(sql) ) {
+			st.setLong(1,id);
                        	ResultSetMetaData md;
                        	ResultSet rs = st.executeQuery();
-                        if (rs.next()) {
+			if ( rs.next() ) {
                                 hm = new HashMap<>();
                                 md = rs.getMetaData();
-                                for (int i = 1; i < md.getColumnCount() + 1; i++) {
-                                        hm.put(md.getColumnLabel(i), rs.getObject(i));
+				for ( int i = 1; i < md.getColumnCount() + 1; i++ ) {
+					hm.put(md.getColumnLabel(i),rs.getObject(i));
                                 }
                        	}
                         Integer idi = (Integer) hm.get("nRecordingID");
@@ -135,9 +138,9 @@ public class AVCRecording implements Serializable {
                         name = (String) hm.get("chName");
                         type = (String) hm.get("chMimeType");
                         projName = (String) hm.get("projName");
-                        String subP = String.format(AVCRecording.SUBPATH_FMT, this.id);
+			String subP = String.format(AVCRecording.SUBPATH_FMT,this.id);
                        	this.path = ctx.getFileBasePath() + File.separator + name;
-                        if (type.contains("wav")) {
+			if ( type.contains("wav") ) {
                                 getTempMPEG3(ctx);
                                 recordingUrl = "/recordings/" + name.replace("wav","mp3");
                         } else recordingUrl = "/recordings/" + name;
@@ -147,7 +150,7 @@ public class AVCRecording implements Serializable {
                         spectrogramBaseUrl = ctx.getSpectroBaseUrl() + "/" + subP;
                         buildSpectrogramUrls();
                 } catch (Exception e) {
-                        System.out.println("SQLException on extractRecord: "+e.getMessage());
+			System.out.println("SQLException on extractRecord: " + e.getMessage());
                 }
         }
         
@@ -163,9 +166,8 @@ public class AVCRecording implements Serializable {
                 if ( fp.isDirectory() ) {
                         String[] fs = fp.list();
                         for ( String s : fs ) {
-                                System.out.println(s);
                                 File sf = new File(s);
-                                if (sf.getName().startsWith("M")) {
+				if ( sf.getName().startsWith("M") ) {
                                         monoSpectrogramUrls.add(spectrogramBaseUrl + "/" + sf.getName());
                                         try {
                                                 BufferedImage readImage = null;
@@ -174,8 +176,8 @@ public class AVCRecording implements Serializable {
                                                 spectrogramWidth += readImage.getWidth();
                                         } catch (Exception e) { spectrogramWidth = 0; spectrogramHeight = 0; }
                                 }
-                                else if ( sf.getName().startsWith("L") ) leftSpectrogramUrls.add(spectrogramBaseUrl+"/"+sf.getName());
-                                else if ( sf.getName().startsWith("R") ) rightSpectrogramUrls.add(spectrogramBaseUrl+"/"+sf.getName());
+				else if ( sf.getName().startsWith("L") ) leftSpectrogramUrls.add(spectrogramBaseUrl + "/" + sf.getName());
+				else if ( sf.getName().startsWith("R") ) rightSpectrogramUrls.add(spectrogramBaseUrl + "/" + sf.getName());
                         }
                }
                  
@@ -189,8 +191,8 @@ public class AVCRecording implements Serializable {
          * @return 
          */
         protected String getSpectrogramPath(AVCContext ctx) {
-                String subPath = ctx.getTmpPath()+File.separator+"spectrograms" + 
-                        File.separator+String.format(AVCRecording.SUBPATH_FMT,id);
+		String subPath = ctx.getTmpPath() + File.separator + "spectrograms"
+			+ File.separator + String.format(AVCRecording.SUBPATH_FMT,id);
                 return subPath;
         }
         
@@ -203,7 +205,7 @@ public class AVCRecording implements Serializable {
         protected final void getTempMPEG3(AVCContext ctx) {
                 if ( id > 0L ) {
                         String subPath = getSpectrogramPath(ctx);
-                        File f = new File(subPath+File.separator+name.replace("wav","mp3"));
+			File f = new File(subPath + File.separator + name.replace("wav","mp3"));
                         if ( f.isFile() ) alternateName = f.getName();
                 }
         }
@@ -256,8 +258,46 @@ public class AVCRecording implements Serializable {
                 if ( !getType().contains("wav") ) return;
                 SOXUtilities u = new SOXUtilities(ctx);
                 u.convertToTempMPEG3(this);
+	}
+
+	public List<Map<String,Object>> listTags() {
+		List<Map<String,Object>> aList = new ArrayList();
+		String sql = "SELECT a.*,b.chCName FROM tags a LEFT JOIN specs b ON a.fkSpecID = b.nSpecID ORDER BY a.fltStart";
+		try ( Statement st = ctx.getConnection().createStatement() ) {
+			ResultSet rs = st.executeQuery(sql);
+			ResultSetMetaData rsmd = rs.getMetaData();
+			while ( rs.next() ) {
+				Map<String,Object> hm = new HashMap<>();
+				String cname = null;
+				for ( int i = 1; i <= rsmd.getColumnCount(); i++ ) {
+					String s = rsmd.getColumnName(i);
+					Object o = rs.getObject(i);
+					hm.put(s,o);
+					if ( s.equals("chCName") && o != null ) cname = (String)o;
         }
         
+				String tname = cname == null || cname.isEmpty() ? (String)hm.get("chAltTaxa") : cname;
+				if ( tname == null || tname.isEmpty() ) continue;
+				hm.put("taxaName",tname);
+				
+				/* the following need to be calculated */
+				Float s = (Float)hm.get("fltStart") * 80;
+				hm.put("left",s);
+				Float d = (Float)hm.get("fltDuration") * 80;
+				hm.put("width",d);
+				Float t = (14 - (Float)hm.get("fltBoxY")) * spectrogramHeight/14;
+				hm.put("top",t);
+				Float h = (Float)hm.get("fltHeight") * spectrogramHeight/14;
+				hm.put("height",h);
+				hm.put("color","recon_3");
+				aList.add(hm);
+			}
+		} catch (Exception ex) {
+			return null;
+		}
+		return aList;
+	}
+
         /**
          * Static function returns an array of recording instances for
          * listing on a web page
@@ -269,7 +309,7 @@ public class AVCRecording implements Serializable {
                 ArrayList<AVCRecording> aList = new ArrayList<>();
                 String msg = new String();
                 String sql = "SELECT files.chName,nRecordingID FROM recordings INNER JOIN files ON fkFileID=nFileID";
-                try (Statement st = ctx.getConnection().createStatement()) {
+		try ( Statement st = ctx.getConnection().createStatement() ) {
                         ResultSet rs = st.executeQuery(sql);
                         while ( rs.next() ) {
                                 long id = rs.getInt("nRecordingID");
@@ -278,7 +318,7 @@ public class AVCRecording implements Serializable {
                                 aList.add(rec);
                         }
                 } catch (Exception e) {
-                        System.out.println("Exception in listing recordings: "+e.getMessage());
+			System.out.println("Exception in listing recordings: " + e.getMessage());
                 }
                 AVCRecording[] recs = new AVCRecording[1];
                 return aList.toArray(recs);
@@ -294,7 +334,7 @@ public class AVCRecording implements Serializable {
                 j.put("centery",50.9);
                 j.put("cluster",false);
                 double xc = 0, yc = 0;
-                try (PreparedStatement st = ctx.getConnection().prepareStatement(sql) ) {
+		try ( PreparedStatement st = ctx.getConnection().prepareStatement(sql) ) {
                         st.setString(1,project);
                         Long pid = new Long(0);
                         ResultSet rs = st.executeQuery();

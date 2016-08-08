@@ -27,6 +27,17 @@
       <img src="${recordingImages[i]}" />
     </c:forEach>
       <img alt="X-Axis (${recordingBean.horizontalLegend})" src="<c:url value="/spectrograms/tmp/${recordingBean.horizontalLegend}" />">
+      
+      <c:if test="${recordingTags != null}">
+        <c:forEach items="${recordingTags}" var="tag">
+          <c:if test="${tag.fltStart > 0}">
+    <div class="tag_box sel_box tmp_${tag.bTemporary} channel_${tag.nChannel} ${tag.color}" id="${tag.nTagID}" 
+         style="left: ${tag.left}px; top: ${tag.top}px; width: ${tag.width-1}px; height: ${tag.height-1}px;" 
+         title="View tag : ${tag.taxaName}">${tag.taxaName}&nbsp;</div>        
+          </c:if>
+        </c:forEach>
+      </c:if>
+      
         </div>
       </div>
     </div>
@@ -36,6 +47,11 @@
       <button onclick="avcr_play()">Play / Pause</button>&nbsp;&nbsp;&nbsp;
       <button onclick="avcr_restart()">Restart</button>
     </div>
+    <!--div style="width: 100px; height: 50px; text-align: center; z-index: 0; padding-top: 40px"><div id="pl_twrap"></div></div-->
+  
+  <div id="tag-table">
+    <c:import url="tagTable.jsp" />
+  </div>
   </div>
   </body>
 </html>
