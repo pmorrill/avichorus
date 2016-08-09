@@ -262,9 +262,10 @@ public class AVCRecording implements Serializable {
 
 	public List<Map<String,Object>> listTags() {
 		List<Map<String,Object>> aList = new ArrayList();
-		String sql = "SELECT a.*,b.chCName FROM tags a LEFT JOIN specs b ON a.fkSpecID = b.nSpecID ORDER BY a.fltStart";
-		try ( Statement st = ctx.getConnection().createStatement() ) {
-			ResultSet rs = st.executeQuery(sql);
+		String sql = "SELECT a.*,b.chCName FROM tags a LEFT JOIN specs b ON a.fkSpecID = b.nSpecID WHERE a.fkRecordingID = ? ORDER BY a.fltStart";
+		try ( PreparedStatement st = ctx.getConnection().prepareStatement(sql) ) {
+			st.setLong(1,this.id);
+			ResultSet rs = st.executeQuery();
 			ResultSetMetaData rsmd = rs.getMetaData();
 			while ( rs.next() ) {
 				Map<String,Object> hm = new HashMap<>();
