@@ -197,7 +197,10 @@ public class AVCTag implements Serializable {
 	}
 	
 	protected boolean updateTag(Long id,Map<String,Object> hm) {
-		String sql = "UPDATE tags SET fkSpecID = ?,chAltTaxa = ?,nBird = ?,chConfidence = ?,chComment = ? WHERE nTagID = ?";
+		Date now = new Date();
+		long tm =  now.getTime()/1000L;
+
+		String sql = "UPDATE tags SET fkSpecID = ?,chAltTaxa = ?,nBird = ?,chConfidence = ?,chComment = ?,tsModified = " + tm + " WHERE nTagID = ?";
 		try ( PreparedStatement st = ctx.getConnection().prepareStatement(sql,Statement.RETURN_GENERATED_KEYS) ) {
 			st.setLong(1,(Long)hm.get("fkSpecID"));
 			st.setString(2,(String)hm.get("chAltTaxa"));
