@@ -23,7 +23,8 @@
       <td>${tag.chConfidence}</td>
       <td>${tag.fltStart}</td>
       <td>${tag.fltDuration}</td>
-      <td style="text-align: center"><a href="<c:url value="/demo/delete" />?id=${tag.nTagID}">Delete</a></td>
+      <td style="text-align: center"><a href="javascript:;" onclick="edit_tag(${tag.nTagID})">Edit</a>&nbsp;|&nbsp;
+        <a href="<c:url value="/demo/delete" />?id=${tag.nTagID}">Delete</a></td>
     </tr>
   </c:forEach>
 </c:if>

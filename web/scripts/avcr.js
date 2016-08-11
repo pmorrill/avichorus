@@ -196,6 +196,20 @@ function display_coords(obj) {
 	y2 = y1 + obj.height() / g_range * 1000;
 	$('#media_msg').html(x1.toFixed(1)+','+y1.toFixed(1)+' -> '+x2.toFixed(1)+','+y2.toFixed(1));
 }
+
+/**
+ * Display an existing tag
+ * 
+ * @param {type} id
+ * @param {type} st
+ * @returns {undefined}
+ */
+function edit_tag(id) {
+    $.get('/avcr-abmi/demo/tag-form?rid='+g_pc_id+"&tagid="+id,function(html) {
+		display_ajax_form(html,{modal:0.4,title:'Edit Species Tag',onclose:avcr_img_cancel_select,focus:'#active_notes .sp_code'},'avcr_notes'); 
+    });
+}
+
 var g_player = 'pl_twrap'; // div to use for player
 var g_media = null; // file to play
 var g_no_tagging = false;
@@ -216,7 +230,7 @@ $(function() {
 	$('#spectrogram-images').mouseleave(function(e) { avcr_img_end_select(e,this); });
 	$('.sel_box').mouseover(function(e) { display_coords($(e.currentTarget));});
 	$('.sel_box').mouseout(function(e) { display_coords(null);});
-	$('.sel_box').mousedown(function(e) {if ( e.which == 1 && e.ctrlKey ) { e.stopPropagation(); display_tag($(this).attr('id'),0); }});
+	$('.sel_box').mousedown(function(e) {if ( e.which == 1 && e.ctrlKey ) { e.stopPropagation(); edit_tag($(this).attr('id')); }});
     
     $('#spectrogram-display').scroll(avcr_scroll);
     $('#spectrogram-wrap').css('cursor', 'default'); 

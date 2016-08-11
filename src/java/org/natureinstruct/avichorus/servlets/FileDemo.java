@@ -131,7 +131,7 @@ public class FileDemo extends HttpServlet {
 
 				case "/tag":
 					recordingIdStr = request.getParameter("fkRecordingID");
-					tagIdStr = request.getParameter("fkRecordingSpecID");
+					tagIdStr = request.getParameter("nTagID");
 					try {
 						recording = new AVCRecording(ctx,Long.parseLong(recordingIdStr));
 						tagId = Long.parseLong(tagIdStr);

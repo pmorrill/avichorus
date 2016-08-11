@@ -33,11 +33,36 @@ public class AVCTag implements Serializable {
 	public Long getRecordingId() { return pCount == null ? new Long((Integer)fieldValues.get("fkRecordingID")) : pCount.id; }
 	public Long getFileId() { return pCount.id; }
 	public Long getId() { return id; }
-	public Integer getSpeciesSelected() { return 0; }
-	public String getAlternateTaxa() { return ""; }
-	public Integer getBird() { return 5; }
-	public String getConfidenceLevel() { return "Fair"; }
-	public String getComment() { return ""; }
+	public Integer getSpeciesSelected() {
+		try {
+			return (Integer)fieldValues.get("fkSpecID");
+		} catch (Exception ex) { }
+		return 0;
+	}
+	public String getAlternateTaxa() {
+		try {
+			return (String)fieldValues.get("chAltTaxa");
+		} catch (Exception ex) { }
+		return "";
+	}
+	public Integer getBird() {
+		try {
+			return (Integer)fieldValues.get("nBird");
+		} catch (Exception ex) { }
+		return 0;
+	}
+	public String getConfidenceLevel() {
+		try {
+			return (String)fieldValues.get("chConfidence");
+		} catch (Exception ex) { }
+		return "";
+	}
+	public String getComment() {
+		try {
+			return (String)fieldValues.get("chComment");
+		} catch (Exception ex) { }
+		return "";
+	}
 	public String getChannels() { return "1"; }
 	public String getDisplaySpeed() { return "80"; }
 	public String getDisplayRange() { return "14"; }
@@ -102,7 +127,7 @@ public class AVCTag implements Serializable {
 			String[] deltaXY = null;
 			String[] imageWH = null;
 
-			if ( pos != null && size != null ) {
+			if ( this.id == null && pos != null && size != null ) {
 				posXY = pos.split(";");
 				deltaXY = size.split(";");
 				imageWH = imageSize.split(";");
@@ -136,7 +161,7 @@ public class AVCTag implements Serializable {
 		
 //		System.out.println(fieldValues);
 		if ( tagId == null ) insertTag(fieldValues);
-		else updateTag(fieldValues);
+		else updateTag(this.id,fieldValues);
 		return this.id;
 	}
 	
@@ -171,8 +196,19 @@ public class AVCTag implements Serializable {
 		return false;
 	}
 	
-	protected boolean updateTag(Map<String,Object> hm) {
-		
+	protected boolean updateTag(Long id,Map<String,Object> hm) {
+		String sql = "UPDATE tags SET fkSpecID = ?,chAltTaxa = ?,nBird = ?,chConfidence = ?,chComment = ? WHERE nTagID = ?";
+		try ( PreparedStatement st = ctx.getConnection().prepareStatement(sql,Statement.RETURN_GENERATED_KEYS) ) {
+			st.setLong(1,(Long)hm.get("fkSpecID"));
+			st.setString(2,(String)hm.get("chAltTaxa"));
+			st.setLong(3,(Long)hm.get("nBird"));
+			st.setString(4,(String)hm.get("chConfidence"));
+			st.setString(5,(String)hm.get("chComment"));
+			st.setLong(6,id);
+			st.executeUpdate();
+		} catch (Exception ex) {
+			System.out.println("Failed inserting record: "+ex.getMessage());
+		}
 		return true;
 	}
 

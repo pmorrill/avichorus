@@ -20,7 +20,7 @@
 <input type="hidden" name="fltImageRange" value="${tagBean.displayRange}" />
 <input type="hidden" name="fkFileID" value="${tagBean.fileId}" />
 <input type="hidden" name="fkRecordingID" value="${tagBean.recordingId}" />
-<input type="hidden" name="nRecordingspecID" value="${tagBean.id}" />
+<input type="hidden" name="nTagID" value="${tagBean.id}" />
 
 
 <div class="sp-select">
@@ -49,7 +49,7 @@ If you cannot identify the species, select an explanation here, and/or add comme
 <div class="divide" style="text-align: right">
 Individual: 
 <select name="nBird" tabindex="1">
-<c:forEach var="i" begin="0" end="11">
+<c:forEach var="i" begin="1" end="8">
   <option value="${i}" <c:if test="${tagBean.bird == i}">selected</c:if>>${i}</option>
 </c:forEach>
 </select>
@@ -63,12 +63,9 @@ Confidence Level:&nbsp;&nbsp;
 
 
 Optional Comment (max 256 chars):<br />
-<textarea name="chComment" tabindex="1">${tag.comment}</textarea>
+<textarea name="chComment" tabindex="1">${tagBean.comment}</textarea>
 <p style="text-align: right">
 <input type="submit" class="btn_save" value="Save Tag" accesskey="s" tabindex="1" />&nbsp;&nbsp;
-<c:if test="${tagBean.id}">
-	<input type="button" class="btn_delete" value="Delete Tag" accesskey="d" tabindex="1" onclick="return confirm('Tag will be removed. Continue?')" />&nbsp;&nbsp;
-</c:if>
 <input type="button" value="Cancel" onclick="close_ajax_dlg();" accesskey="x" tabindex="1" />
 </p>
 </form>
