@@ -142,12 +142,22 @@ public class FileDemo extends HttpServlet {
 						tag = new AVCTag(ctx,recording,tagId);
 						if ( tag != null ) {
 							long tid = tag.saveTagFromPost(request);
-							response.sendRedirect(request.getServletContext().getContextPath() + "/demo/play?id=" + recording.getId());
+							response.setContentType("application/json");
+							out.println("{\"id\":"+tid+",\"species\":\""+tag.getSpeciesName()+"\",\"recordingId\":" + recordingIdStr + "}");
 							return;
 						}
 					}
 					return;
 				
+				case "/tag-table":
+					recordingIdStr = request.getParameter("id");
+					try {
+						recording = new AVCRecording(ctx,Long.parseLong(recordingIdStr));
+						request.setAttribute("recordingTags",recording.listTags());
+						request.getServletContext().getRequestDispatcher("/WEB-INF/tagTable.jsp").forward(request,response);
+					} catch (NumberFormatException ex) { }
+					return;
+					
 				case "/delete":
 					tagId = Long.parseLong(request.getParameter("id"));
 					tag = new AVCTag(ctx,recording,tagId);

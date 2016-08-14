@@ -11,7 +11,8 @@
   <p style="padding-bottom: 5px; width: 520px"><strong>Enter a four-letter species code name (AOU abbreviation), 
       or select a species from the dropdown box. Adjust the confidence level according to your confidence 
       in the identification. If possible, indicate the individual bird captured within the box you have outlined. You may optionally provide a comment on this tag.</strong></p>
-      <form id="active-notes" action="<c:url value="/demo/tag" />" method="post" class="form_notes">
+      <p style="text-align: right; font-size: 0.8em">${tagBean.modifiedMsg}</p>
+<form id="active-notes" action="<c:url value="/demo/tag" />" method="post" class="form_notes" onsubmit="return false">
 <input type="hidden" name="chBoxPosition" class="coords"  value="" />
 <input type="hidden" name="chBoxSize" class="box_size"  value="" />
 <input type="hidden" name="nChannels" value="${tagBean.channels}" />
@@ -65,7 +66,7 @@ Confidence Level:&nbsp;&nbsp;
 Optional Comment (max 256 chars):<br />
 <textarea name="chComment" tabindex="1">${tagBean.comment}</textarea>
 <p style="text-align: right">
-<input type="submit" class="btn_save" value="Save Tag" accesskey="s" tabindex="1" />&nbsp;&nbsp;
+<input type="button" class="btn_save" value="Save Tag" accesskey="s" tabindex="1" />&nbsp;&nbsp;
 <input type="button" value="Cancel" onclick="close_ajax_dlg();" accesskey="x" tabindex="1" />
 </p>
 </form>
@@ -88,9 +89,8 @@ $(function() {
     
 	$('.btn_save').click(function(e) {
 		if ( $('#spec-id').val() == 0 && $('#alt-taxa').val() == '' ) { alert('You must select a species or an alternative taxon'); return false; }
-	        return true;
+		$('.btn_save').attr('disabled',true); saveTag(${tagBean.id}); e.preventDefault();
 	});
-	$('.btn_delete').click(function(e) { avcr_remove_tag(${tagBean.id}); close_ajax_dlg(); });
 	$('#note-form').keyup(function(e) { if ( e.keyCode == 13 ) { e.preventDefault(); $('.btn_save').click() }}); /* add 'Enter' handler */    
 });  
 </script>

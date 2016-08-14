@@ -16,7 +16,10 @@ function init_dlg(ops) {
 	$(document).data('initialized',1);
 }
 
-function close_ajax_dlg() { $('#ajax_dlg').trigger('close'); $('#ajax_mask').fadeOut(500); $('#ajax_dlg').fadeOut('slow',function() {$('#ajax_dlg').remove(); }); }
+function close_ajax_dlg() {
+  $('#ajax_dlg').trigger('close'); $('#ajax_mask').fadeOut(500);
+  $('#ajax_dlg').fadeOut('slow',function() {$('#ajax_dlg').remove(); });
+}
 
 function display_ajax_form(html,ops,cl) {
   if ( $(document).data('initialized') != 1 ) init_dlg(ops);
@@ -31,8 +34,6 @@ function display_ajax_form(html,ops,cl) {
   $('#ajax_dlg').css('top',$(window).scrollTop() + ($(window).height() - $('#ajax_dlg').height()) / 2);
   if ( ops.modal > 0 ) mask_screen(ops.modal,ops.autocancel);
   $('#ajax_dlg').fadeIn('slow',function() { $(ops.focus).focus(); });
-
- // position_ajax_dlg(ops);
 }
 
 function mask_screen(op,autocancel) {
@@ -53,11 +54,16 @@ function saveTag(id) {
   $.post('/avcr-abmi/demo/tag',
           $('#active-notes').serialize(),
           function (json) {
+            var b = $('#new_sel');
+            if ( b.length ) {
+              b.removeClass("new_sel_box").addClass('tag_box sel_box tmp_0 channel_0 recon_3');
+              b.attr("id",json.id).text(json.species);
+              b.mousedown(function(e) {if ( e.which == 1 && e.ctrlKey ) { e.stopPropagation(); edit_tag($(this).attr('id')); }});
+            } else $('#'+json.id).text(json.species);
             close_ajax_dlg();
-            $('#' + json.id).removeClass('recon_1 recon_2 recon_3 recon_0 recon_4 recon_hide').addClass(json.color);
-            $.get('/avcr-abmi/demo/refresh-tags', function (html) {
-              $('#avcr_sp_list').html(html);
+            $.get('/avcr-abmi/demo/tag-table?id='+json.recordingId,function(html) {
+              $('#tag-table').html(html);
             });
-    },'json');
-  
+          }
+    ,'json');
 }

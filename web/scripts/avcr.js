@@ -168,6 +168,7 @@ function avcr_img_move_select(e,d) {
 	if ( w < 0 ) { l = l + w; w = -w; }
 	ns.css({top:t,left:l,height:h,width:w});
 }
+
 function avcr_img_end_select(e,d) {
 	if ( e.which != 1 || g_mState != 1 ) return;
 	var ns = $('#new_sel');

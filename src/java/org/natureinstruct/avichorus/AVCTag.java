@@ -10,6 +10,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -33,6 +35,24 @@ public class AVCTag implements Serializable {
 	public Long getRecordingId() { return pCount == null ? new Long((Integer)fieldValues.get("fkRecordingID")) : pCount.id; }
 	public Long getFileId() { return pCount.id; }
 	public Long getId() { return id; }
+	public String getSpeciesName() {
+		try {
+			String n = (String)fieldValues.get("chCName");
+			if ( n == null ) n = (String)fieldValues.get("chAltTaxa");
+			return n;
+		} catch (Exception ex) { }
+		return null;
+	}
+	
+	public String getModifiedMsg() {
+		try {
+			DateFormat df = new SimpleDateFormat();
+			Long tm = (Long)fieldValues.get("tsModified");
+			Date d = new Date(tm);
+			return "Modified: "+df.format(d);
+		} catch (Exception ex) { }
+		return "";
+	}
 	public Integer getSpeciesSelected() {
 		try {
 			return (Integer)fieldValues.get("fkSpecID");
@@ -73,10 +93,17 @@ public class AVCTag implements Serializable {
 		openTag(id);
 	}
 	
+	/**
+	 * Open / refresh a tag from the database
+	 * 
+	 * @param id 
+	 */
 	protected final void openTag(Long id) {
 		fieldValues = null;
 		if ( id == null ) return;
-		try ( PreparedStatement st = ctx.getConnection().prepareStatement("SELECT * FROM tags WHERE nTagID = ?") ) {
+		try ( PreparedStatement st = ctx
+			.getConnection()
+				.prepareStatement("SELECT a.*,b.chCName FROM tags a LEFT JOIN specs b ON fkSpecID = nSpecID WHERE nTagID = ?") ) {
 			st.setLong(1,id);
 			try ( ResultSet rs = st.executeQuery() ) {
 				if ( !rs.next() ) return;
@@ -159,9 +186,9 @@ public class AVCTag implements Serializable {
 			fieldValues.put("nBird",new Long(1));
 		}
 		
-//		System.out.println(fieldValues);
 		if ( tagId == null ) insertTag(fieldValues);
 		else updateTag(this.id,fieldValues);
+		openTag(this.id);
 		return this.id;
 	}
 	
