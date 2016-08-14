@@ -48,7 +48,7 @@ public class AVCTag implements Serializable {
 		try {
 			DateFormat df = new SimpleDateFormat();
 			Long tm = (Long)fieldValues.get("tsModified");
-			Date d = new Date(tm);
+			Date d = new Date(tm*1000L);
 			return "Modified: "+df.format(d);
 		} catch (Exception ex) { }
 		return "";
