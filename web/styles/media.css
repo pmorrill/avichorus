@@ -61,7 +61,7 @@ td { text-align: left; background-color: #ffffff; padding: 5px; font-size: 0.8em
 }
 
 /*
- *  Note bg-image hack for IE, which is STUPID
+ *  Note bg-image hack for IE,
  *  re hover property on transparent block elements
  */
 .sel_box {

@@ -43,8 +43,6 @@ and open the template in the editor.
 #ajax_dlg .close_btn { float: right; margin: 5px; }
 /*#ajax_content table td { padding: 0px; }*/
 
-a.clear,a.close,a.delete { background-image: url('/images/cross.png'); }
-
 #ajax_mask { position: absolute; display: none; background-color: #000000; z-index: 100; left: 0px; top: 0px; }
 
 img.ajax_clickable { border: 0px; margin: 0px; }
@@ -53,7 +51,7 @@ img.ajax_clickable { border: 0px; margin: 0px; }
 .qmenu td { padding: 0px; }
 .share td { padding: 6px; }
 
-.busy { cursor: "wait"; }
+.busy { cursor: wait; }
 
 .note-form {
   padding: 5px;

@@ -51,12 +51,14 @@ function mask_screen(op,autocancel) {
  * @returns {undefined}
  */
 function saveTag(id) {
+  $('#spectrogram-wrap').addClass('busy');
   $.post('/avcr-abmi/demo/tag',
           $('#active-notes').serialize(),
           function (json) {
+            $('#spectrogram-wrap').removeClass('busy');
             var b = $('#new_sel');
             if ( b.length ) {
-              b.removeClass("new_sel_box").addClass('tag_box sel_box tmp_0 channel_0 recon_3');
+              b.removeClass("new_sel_box").addClass('sel_box');
               b.attr("id",json.id).text(json.species);
               b.mousedown(function(e) {if ( e.which == 1 && e.ctrlKey ) { e.stopPropagation(); edit_tag($(this).attr('id')); }});
             } else $('#'+json.id).text(json.species);

@@ -31,7 +31,7 @@
       <c:if test="${recordingTags != null}">
         <c:forEach items="${recordingTags}" var="tag">
           <c:if test="${tag.fltStart > 0}">
-    <div class="tag_box sel_box tmp_${tag.bTemporary} channel_${tag.nChannel} ${tag.color}" id="${tag.nTagID}" 
+    <div class="sel_box" id="${tag.nTagID}" 
          style="left: ${tag.left}px; top: ${tag.top}px; width: ${tag.width-1}px; height: ${tag.height-1}px;" 
          title="View tag : ${tag.taxaName}">${tag.taxaName}&nbsp;</div>        
           </c:if>

@@ -176,7 +176,9 @@ function avcr_img_end_select(e,d) {
     g_mState = 0; // temp to stop dragging the box bigger
 
     /* show form in modal state */
+    $('#spectrogram-wrap').addClass('busy');
 	$.get('/avcr-abmi/demo/tag-form?rid='+g_pc_id,function(html) {
+        $('#spectrogram-wrap').removeClass('busy');
 		display_ajax_form(html,{modal:0.4,title:'Tag a New Species',onclose:avcr_img_cancel_select,focus:'#active_notes .sp_code'},'avcr_notes'); 
 		/* add data to the form */
 		var nsp = $('#new_sel').position();
@@ -184,18 +186,6 @@ function avcr_img_end_select(e,d) {
 		d = ns.width()+';'+ns.height();
 		$('#ajax_dlg form .coords').val(c); $('#ajax_dlg form .box_size').val(d);
 	});
-}
-
-function display_coords(obj) {
-	return;
-
-	if ( !obj || !obj.length ) { $('#media_msg').html(''); return; }
-	dp = obj.offset();
-	x1 = (dp.left - $('#spectrogram-images').offset().left) / g_speed;
-	y1 = (dp.top - $('#spectrogram-images').offset().top) / g_range * 1000;
-	x2 = x1 + obj.width() / g_speed;
-	y2 = y1 + obj.height() / g_range * 1000;
-	$('#media_msg').html(x1.toFixed(1)+','+y1.toFixed(1)+' -> '+x2.toFixed(1)+','+y2.toFixed(1));
 }
 
 /**
@@ -206,7 +196,9 @@ function display_coords(obj) {
  * @returns {undefined}
  */
 function edit_tag(id) {
+    $('#spectrogram-wrap').addClass('busy');
     $.get('/avcr-abmi/demo/tag-form?rid='+g_pc_id+"&tagid="+id,function(html) {
+        $('#spectrogram-wrap').removeClass('busy');
 		display_ajax_form(html,{modal:0.4,title:'Edit Species Tag',onclose:avcr_img_cancel_select,focus:'#active_notes .sp_code'},'avcr_notes'); 
     });
 }
@@ -218,7 +210,7 @@ var g_was_playing = false;
 var dragging = null;
 
 $(function() {
-	$('#spectrogram-wrap').css('cursor', 'wait'); 
+	$('#spectrogram-wrap').addClass('busy'); 
 	if ( g_media != null ) init_player6(true,g_media,g_player,true,avcr_jwp_cb_spectro_scroll,null,null);
 	$('#spectrogram-images img').mousemove(function(e) {if ( e.which == 1 ) e.preventDefault();});
 	$('#spectrogram-images img').mousedown(function(e) {if ( e.which == 1 ) e.preventDefault();});
@@ -229,10 +221,8 @@ $(function() {
 	$('#spectrogram-images').mouseup(function(e) { avcr_img_end_select(e,this); });
 	$('#spectrogram-images').mousemove(function(e) { avcr_img_move_select(e,this); });
 	$('#spectrogram-images').mouseleave(function(e) { avcr_img_end_select(e,this); });
-	$('.sel_box').mouseover(function(e) { display_coords($(e.currentTarget));});
-	$('.sel_box').mouseout(function(e) { display_coords(null);});
 	$('.sel_box').mousedown(function(e) {if ( e.which == 1 && e.ctrlKey ) { e.stopPropagation(); edit_tag($(this).attr('id')); }});
     
     $('#spectrogram-display').scroll(avcr_scroll);
-    $('#spectrogram-wrap').css('cursor', 'default'); 
+    $('#spectrogram-wrap').removeClass('busy'); 
 });
