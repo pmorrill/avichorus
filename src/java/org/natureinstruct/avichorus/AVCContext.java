@@ -5,6 +5,7 @@
  */
 package org.natureinstruct.avichorus;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -28,6 +29,9 @@ public class AVCContext {
         private String                                  spectroBasePath;
         private String                                  spectroBaseUrl;
         private Long                                    userId;
+	private Boolean                                 mysql;
+                
+	public boolean isMysql() { return mysql; }
                 
         /**
          * Constructor pulls parameters from web.xml
@@ -38,6 +42,7 @@ public class AVCContext {
         public AVCContext(HttpServletRequest request,HttpServletResponse response) {
                 ServletContext servletCtx = request.getServletContext();
                 dbString = servletCtx.getInitParameter("dbString");
+		mysql = dbString.contains("mysql");
                 soxCmd = servletCtx.getInitParameter("soxCmd");
                 soxiCmd = servletCtx.getInitParameter("soxiCmd");
                 fileBasePath = servletCtx.getRealPath("/WEB-INF/test-recordings");
@@ -48,8 +53,8 @@ public class AVCContext {
         }
         
         /**
-         * Open a connection to your database described in the dbString parameter
-         * of web.xml
+	 * Open a connection to your database described in the dbString parameter of
+	 * web.xml
          * 
          * @return 
          */
@@ -68,8 +73,15 @@ public class AVCContext {
                 return true;
         }
         
-        protected String getSoxCmd() { return soxCmd; }
-        protected String getSoxiCmd() { return soxiCmd; }
+	protected String getSoxCmd() {
+		File f = new File(soxCmd);
+		return f.canExecute() ? soxCmd : "";
+	}
+
+	protected String getSoxiCmd() {
+		File f = new File(soxiCmd);
+		return f.canExecute() ? soxiCmd : "";
+	}
         protected String getFileBasePath() { return fileBasePath; }
         protected String getSpectroBasePath() { return spectroBasePath; }
         protected String getSpectroBaseUrl() { return spectroBaseUrl; }
