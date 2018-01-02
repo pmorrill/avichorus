@@ -147,6 +147,8 @@ public class SOXUtilities {
 					p.add(start.toString());
 					p.add(process.toString());
 					p.add("spectrogram");
+					p.add("-w"); // window
+					p.add("Hamming");
 					p.add("-r"); // raw - no legends or axes
 					p.add("-s"); // slack overlapping
 					p.add("-l"); // light background
