@@ -246,7 +246,7 @@ public class AVCRecording implements Serializable {
 	public boolean createSpectrograms(AVCContext ctx) {
 		if ( id == 0 ) return false;
                 SOXUtilities u = new SOXUtilities(ctx);
-		return !u.createSpectrogramsToTemp(this);
+		return u.createSpectrogramsToTemp(this);
         }
         
         /**
