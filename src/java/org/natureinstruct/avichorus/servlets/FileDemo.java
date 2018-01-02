@@ -65,8 +65,7 @@ public class FileDemo extends HttpServlet {
                                 
                                 case "/map-data":
                                         AVCRecording[] recordingList = AVCRecording.listFiles(ctx);
-                                        JSONObject map = new JSONObject();
-                                        map = AVCRecording.getMap(ctx,"ABMI-TEST");
+					JSONObject map = AVCRecording.getMap(ctx,"ABMI-TEST");
                                         request.setAttribute("recordingList",recordingList);
                                         response.setContentType("application/json;charset=UTF-8");
                                         map.writeJSONString(out);
