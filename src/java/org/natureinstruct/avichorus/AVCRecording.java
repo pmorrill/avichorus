@@ -243,10 +243,10 @@ public class AVCRecording implements Serializable {
          * 
          * @param ctx 
          */
-        public void createSpectrograms(AVCContext ctx) {
-                if ( id == 0 ) return;
+	public boolean createSpectrograms(AVCContext ctx) {
+		if ( id == 0 ) return false;
                 SOXUtilities u = new SOXUtilities(ctx);
-                u.createSpectrogramsToTemp(this);
+		return !u.createSpectrogramsToTemp(this);
         }
         
         /**
@@ -254,11 +254,11 @@ public class AVCRecording implements Serializable {
          * 
          * @param ctx 
          */
-        public void convertToMPEG3(AVCContext ctx) {
-                if ( id == 0 ) return;
-                if ( !getType().contains("wav") ) return;
+	public boolean convertToMPEG3(AVCContext ctx) {
+		if ( id == 0 ) return false;
+		if ( !getType().contains("wav") ) return false;
                 SOXUtilities u = new SOXUtilities(ctx);
-                u.convertToTempMPEG3(this);
+		return u.convertToTempMPEG3(this);
 	}
 
 	public List<Map<String,Object>> listTags() {

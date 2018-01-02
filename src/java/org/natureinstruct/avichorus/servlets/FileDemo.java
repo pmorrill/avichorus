@@ -76,6 +76,8 @@ public class FileDemo extends HttpServlet {
                                         AVCRecording[] recordings = AVCRecording.listFiles(ctx);
                                         request.setAttribute("recordingList",recordings);
                                         request.setAttribute("pageTitle","Recording List");
+					request.setAttribute("errorMsg",request.getSession().getAttribute("errorMsg"));
+					request.getSession().removeAttribute("errorMsg");
                                         request.getServletContext().getRequestDispatcher("/WEB-INF/listRecordings.jsp").forward(request,response);
                                         return;
 
@@ -83,7 +85,7 @@ public class FileDemo extends HttpServlet {
                                         Long rid;
                                         try {
                                                 rid = Long.parseLong(request.getParameter("id"));
-                                        } catch (Exception e) { msg = "Error opening recording id"; break; }
+					} catch (NumberFormatException e) { msg = "Error opening recording id"; break; }
 					recording = new AVCRecording(ctx,rid);
                                         request.setAttribute("recordingBean",recording);
 					request.setAttribute("recordingTags",recording.listTags());
@@ -97,7 +99,7 @@ public class FileDemo extends HttpServlet {
                                         /* create a specttrograms into tmp directory */
                                         if ( id != null ) {
                                                 AVCRecording rec = new AVCRecording(ctx,Long.parseLong(id));
-                                                rec.createSpectrograms(ctx);
+						if ( !rec.createSpectrograms(ctx) ) request.getSession().setAttribute("errorMsg","Failed to create a spectrogram");
                                         }
 					response.sendRedirect(request.getServletContext().getContextPath() + "/demo/list");
                                         return;
@@ -106,7 +108,7 @@ public class FileDemo extends HttpServlet {
                                         /* convert a wav file into mp3, and store in temp directory */
                                         if ( id != null ) {
                                                 AVCRecording rec = new AVCRecording(ctx,Long.parseLong(id));
-                                                rec.convertToMPEG3(ctx);
+						if ( !rec.convertToMPEG3(ctx) ) request.getSession().setAttribute("errorMsg","Failed to convert the file to MP3");
                                         }
 					response.sendRedirect(request.getServletContext().getContextPath() + "/demo/list");
                                         return;

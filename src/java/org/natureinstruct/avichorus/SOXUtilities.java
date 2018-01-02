@@ -122,11 +122,10 @@ public class SOXUtilities {
 			try {
 				if ( lenTotal == 0 ) return false;
 				int segs = 1;
-				double done = 0, todo = 0;
 				Double start = 0.0, process = DEFAULT_SP_LENGTH;
 
 				/* start with a mono version of the png files */
-				String ch = "M", remix = "remix -";
+				String ch = "M", remix = "-";
 				do {
 					/* output file segment name */
 					outPath = rec.getSpectrogramPath(ctx) + File.separator + ch + segs + ".png";
@@ -142,7 +141,7 @@ public class SOXUtilities {
 					p.add("rate");
 					p.add(DEFAULT_SP_FREQ + "k");
 					p.add("remix");
-					p.add("-");
+					p.add(remix);
 					p.add("trim");
 					p.add(start.toString());
 					p.add(process.toString());
@@ -177,7 +176,7 @@ public class SOXUtilities {
 						case "M":
 							/* now loop and do a left channel version */
 							ch = "L";
-							remix = "remix 1";
+							remix = "1";
 							start = 0.0;
 							process = DEFAULT_SP_LENGTH;
 							segs = 1;
@@ -185,7 +184,7 @@ public class SOXUtilities {
 						case "L":
 							/* now loop and do a right channel version */
 							ch = "R";
-							remix = "remix 2";
+							remix = "2";
 							start = 0.0;
 							process = DEFAULT_SP_LENGTH;
 							segs = 1;
