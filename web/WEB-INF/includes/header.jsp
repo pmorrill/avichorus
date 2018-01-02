@@ -11,10 +11,11 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>Avichorus Demo - ${pageTitle}</title>
-    <script type='text/javascript' src='http://www.natureinstruct.org/common/jquery/jquery-1.9.0.js'></script>
+    <script type='text/javascript' src='https://www.natureinstruct.org/common/jquery/jquery-1.9.0.js'></script>
     <link rel="stylesheet" type="text/css" href="<c:url value="/styles/media.css" />" />
     <link rel="stylesheet" type="text/css" href="<c:url value="/styles/taggingDlg.css" />" />
-    <script type="text/javascript" src="http://maps.google.com/maps/api/js"></script>
+    <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=AIzaSyCI7kDQND9xGv2LhWaPEXL1CO1VO-_V9bs"></script>
+	
     <script type="text/javascript" src="<c:url value="/scripts/jwplayer.js" />"></script>
     <script type='text/javascript' src='<c:url value="/scripts/avcr.js" />'></script>
     <script type='text/javascript' src='<c:url value="/scripts/taggingDlg.js" />'></script>
