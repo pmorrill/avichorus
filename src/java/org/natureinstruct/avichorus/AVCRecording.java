@@ -99,7 +99,8 @@ public class AVCRecording implements Serializable {
         public Double getDisplaySpeed() { return SOXUtilities.DEFAULT_SP_RES; }
         
         /**
-         * The horizontal axis length is no more than 2 s longer than the recording itself
+	 * The horizontal axis length is no more than 2 s longer than the recording
+	 * itself
          * 
          * @return 
          */
@@ -238,7 +239,7 @@ public class AVCRecording implements Serializable {
         }
         
         /**
-         * Open a utility instance and create the specotrams for this recording
+	 * Open a utility instance and create the spectrograms for this recording
          * 
          * @param ctx 
          */
