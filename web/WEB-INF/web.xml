@@ -11,12 +11,12 @@
     </context-param>
     <context-param>
         <param-name>soxCmd</param-name>
-        <param-value>"c:\Program Files (x86)\sox-14-4-2\sox"</param-value>
+        <param-value>C:\Program Files (x86)\sox-14-4-2\sox.exe</param-value>
         <description>Path to sox binaries</description>
     </context-param>
     <context-param>
         <param-name>soxiCmd</param-name>
-        <param-value>"c:\Program Files (x86)\sox-14-4-2\soxi"</param-value>
+        <param-value>C:\Program Files (x86)\sox-14-4-2\soxi.exe</param-value>
         <description>Path to soxi binaries</description>
     </context-param>
     <session-config>
