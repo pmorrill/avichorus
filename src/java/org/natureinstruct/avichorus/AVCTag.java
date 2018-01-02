@@ -198,7 +198,7 @@ public class AVCTag implements Serializable {
 
 		String sql = "INSERT INTO tags (fkRecordingID,fkSpecID,chAltTaxa,nBird,chConfidence,chComment,"
 			+ "fltStart,fltDuration,fltBoxY,fltHeight,nChannel,bStereoTag,tsCreated,tsModified) values (?,?,?,?,?,?,?,?,?,?"
-			+ ",0,false," + tm + "," + tm + ")";
+			+ ",0,0," + tm + "," + tm + ")";
 		this.id = 0L;
 		try ( PreparedStatement st = ctx.getConnection().prepareStatement(sql,Statement.RETURN_GENERATED_KEYS) ) {
 			st.setLong(1,(Long)hm.get("fkRecordingID"));
